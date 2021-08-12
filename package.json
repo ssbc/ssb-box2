@@ -1,0 +1,37 @@
+{
+  "name": "ssb-db2-box2",
+  "description": "Box2 support for SSB DB2",
+  "version": "0.1.0",
+  "homepage": "https://github.com/ssb-ngi-pointer/ssb-db2-box2",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:ssb-ngi-pointer/ssb-db2-box2.git"
+  },
+  "dependencies": {
+    "envelope-js": "^1.1.0",
+    "private-group-spec": "^1.0.0",
+    "ssb-bendy-butt": "^0.10.0",
+    "ssb-bfe": "^1.0.1",
+    "ssb-private-group-keys": "^0.1.0",
+    "ssb-ref": "^2.16.0"
+  },
+  "devDependencies": {
+    "mkdirp": "^1.0.4",
+    "pull-stream": "^3.6.14",
+    "rimraf": "^3.0.2",
+    "secret-stack": "6.3.2",
+    "ssb-backlinks": "^2.1.1",
+    "ssb-caps": "1.1.0",
+    "ssb-db": "^20.4.0",
+    "ssb-db2": "github:ssb-ngi-pointer/ssb-db2#publishAsMetafeedsGroups",
+    "ssb-query": "^2.4.5",
+    "ssb-tribes": "github:ssbc/ssb-tribes",
+    "tap-spec": "^5.0.0",
+    "tape": "^5.2.2"
+  },
+  "scripts": {
+    "test": "tape test/*.js | tap-spec"
+  },
+  "author": "Anders Rune Jensen <arj03@protonmail.ch>",
+  "license": "AGPL-3.0"
+}
