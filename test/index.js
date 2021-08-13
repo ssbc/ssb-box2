@@ -6,6 +6,7 @@ const mkdirp = require('mkdirp')
 const SecretStack = require('secret-stack')
 const caps = require('ssb-caps')
 const pull = require('pull-stream')
+const bendyButt = require('ssb-bendy-butt')
 
 const { and, or, where, author, type, toPullStream } = require('ssb-db2/operators')
 
@@ -52,7 +53,20 @@ test('publishAs bendy butt', (t) => {
     }
   }
 
-  db.publishAs(mfKeys, mainKeys, content, (err, privateMsg) => {
+  const bbmsg = bendyButt.encodeNew(
+    content,
+    mainKeys,
+    mfKeys,
+    1,
+    null,
+    Date.now(),
+    null,
+    sbot.box2.encryptBendyButt
+  )
+
+  const msgVal = bendyButt.decode(bbmsg)
+
+  db.publishAs(mfKeys, msgVal, (err, privateMsg) => {
     t.error(err, 'no err')
 
     t.true(privateMsg.value.content.endsWith(".box2"), 'box2 encoded')
