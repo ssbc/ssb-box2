@@ -93,7 +93,7 @@ exports.init = function (sbot, config) {
 
 
   const FEED = bfe.bfeNamedTypes['feed']
-  const CLASSIC_FEED_TF = Buffer.from([FEED.code, FEED.formats['ssb/classic'].code])
+  const CLASSIC_FEED_TF = Buffer.from([FEED.code, FEED.formats['classic'].code])
 
   function decryptBox2Msg(envelope, feed_id, prev_msg_id, read_key) {
     const plaintext = unboxBody(envelope, feed_id, prev_msg_id, read_key)

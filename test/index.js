@@ -7,6 +7,7 @@ const SecretStack = require('secret-stack')
 const caps = require('ssb-caps')
 const pull = require('pull-stream')
 const bendyButt = require('ssb-bendy-butt')
+const SSBURI = require('ssb-uri2')
 
 const { and, or, where, author, type, toPullStream } = require('ssb-db2/operators')
 
@@ -26,7 +27,7 @@ const sbot = SecretStack({ appKey: caps.shs })
  })
 const db = sbot.db
 
-test('publishAs bendy butt', (t) => {
+test('db.add bendy butt', (t) => {
   const testkey = Buffer.from(
     '30720d8f9cbf37f6d7062826f6decac93e308060a8aaaa77e6a4747f40ee1a76',
     'hex'
@@ -36,7 +37,11 @@ test('publishAs bendy butt', (t) => {
 
   // fake some keys
   const mfKeys = ssbKeys.generate()
-  mfKeys.id = mfKeys.id.replace(".ed25519", ".bbfeed-v1")
+  const classicUri = SSBURI.fromFeedSigil(mfKeys.id)
+  const { type, /* format, */ data } = SSBURI.decompose(classicUri)
+  const bendybuttUri = SSBURI.compose({ type, format: 'bendybutt-v1', data })
+  mfKeys.id = bendybuttUri
+
   const mainKeys = ssbKeys.generate()
 
   const content = {
@@ -65,12 +70,13 @@ test('publishAs bendy butt', (t) => {
   )
 
   const msgVal = bendyButt.decode(bbmsg)
-
-  db.publishAs(mfKeys, msgVal, (err, privateMsg) => {
+  
+  db.add(msgVal, (err, privateMsg) => {
     t.error(err, 'no err')
 
     t.true(privateMsg.value.content.endsWith(".box2"), 'box2 encoded')
     db.get(privateMsg.key, (err, msg) => {
+      t.error(err, 'no err')
       t.equal(msg.content.feedpurpose, 'secret purpose')
       sbot.close(t.end)
     })
