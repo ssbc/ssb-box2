@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2021 Anders Rune Jensen
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 const { directMessageKey } = require('ssb-private-group-keys')
 const bfe = require('ssb-bfe')
 const { keySchemes } = require('private-group-spec')

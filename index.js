@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2021 Anders Rune Jensen
+//
+// SPDX-License-Identifier: AGPL-3.0-only
+
 const bfe = require('ssb-bfe')
 const { box, unboxKey, unboxBody } = require('envelope-js')
 const { SecretKey } = require('ssb-private-group-keys')
@@ -10,7 +14,7 @@ exports.name = 'box2'
 
 exports.init = function (sbot, config) {
   if (!sbot.db) throw new Error('ssb-db2-box2 requires ssb-db2')
-  
+
   const sbotId = config.keys.id
   const keystore = KeyStore(config)
 
@@ -44,10 +48,10 @@ exports.init = function (sbot, config) {
       else return [...acc, keystore.sharedDMKey(recp)]
     }, [])
   }
-  
+
   function encryptClassic(content, previous) {
     validateRecipients(content.recps)
-    
+
     const recipientKeys = getKeys(content.recps)
 
     const plaintext = Buffer.from(JSON.stringify(content), 'utf8')
@@ -72,7 +76,7 @@ exports.init = function (sbot, config) {
     recps
   ) {
     validateRecipients(recps)
-    
+
     const recipientKeys = getKeys(recps)
 
     const msgKey = new SecretKey().toBuffer()
@@ -131,7 +135,7 @@ exports.init = function (sbot, config) {
       return decryptBox2Msg(envelope, authorBFE, previousBFE, read_key)
     else return ''
   }
-  
+
   // obz?
   let isReady = false
   function setReady(ready) {
@@ -152,7 +156,7 @@ exports.init = function (sbot, config) {
     encryptClassic,
     encryptBendyButt,
     decryptBox2,
-    
+
     registerIsGroup,
     addDMKey: keystore.addDMKey,
     addGroupKey: keystore.addGroupKey,
