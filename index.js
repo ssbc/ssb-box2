@@ -35,7 +35,7 @@ exports.init = function (sbot, config) {
 
     // groupId can only be in first "slot"
     if (!isGroup(recipients[0]) && !isFeed(recipients[0]))
-      throw new Error('first recipient must be a 8K-group or feed')
+      throw new Error('first recipient must be a group or feed')
 
     if (recipients.length > 1 && !recipients.slice(1).every(isFeed))
       throw new Error('only feeds are supported as recipients')
