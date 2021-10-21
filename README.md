@@ -39,6 +39,25 @@ sbot.db.publish(content, (err, privateMsg) => {
 })
 ```
 
+## Configuration
+
+SSB-DB2-BOX2 supports ssb-config parameters to configure things:
+
+```js
+const config = {
+  box2: {
+    /*
+      This variable is only for DMs. Group messages are always using box2.
+      For DMs, the problem is figuring out if the other side supports 
+      box2 or not. We expect to be able to use metafeeds to determine this
+      in the future. For now you can use this variable to use box2 for all
+      DMs, otherwise box1 will be used for all.
+    */
+    alwaysbox2: true
+  }
+}
+```
+
 ## Methods
 
 ### addDMKey(key)
