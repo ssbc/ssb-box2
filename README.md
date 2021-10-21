@@ -30,12 +30,12 @@ const testkey = Buffer.from(
   'hex'
 )
 
-sbot.box2.addDMKey(testkey)
+sbot.box2.addOwnDMKey(testkey)
 
 let content = { type: 'post', text: 'super secret', recps: [keys.id] }
 
 sbot.db.publish(content, (err, privateMsg) => {
-  // privateMsg is not encrypted using box2
+  // privateMsg is now encrypted using box2
 })
 ```
 
@@ -81,3 +81,4 @@ persisted in this module.
 
 [SSB DB2]: https://github.com/ssb-ngi-pointer/ssb-db2/
 [ssb-tribes]: https://github.com/ssbc/ssb-tribes/
+[ssb-keyring]: https://gitlab.com/ahau/lib/ssb-keyring/
