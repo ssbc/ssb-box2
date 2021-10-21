@@ -7,6 +7,7 @@ const { box, unboxKey, unboxBody } = require('envelope-js')
 const { SecretKey } = require('ssb-private-group-keys')
 const bendy = require('ssb-bendy-butt')
 const { isFeed } = require('ssb-ref')
+const DeferredPromise = require('p-defer')
 
 const Keys = require('./keys')
 
@@ -137,9 +138,9 @@ exports.init = function (sbot, config) {
   }
 
   // obz?
-  let isReady = false
-  function setReady(ready) {
-    isReady = ready
+  const ready = DeferredPromise()
+  function setReady() {
+    ready.resolve()
   }
 
   // FIXME: maybe if a feed has a meta feed, then we can assume it
@@ -148,6 +149,10 @@ exports.init = function (sbot, config) {
     if (config.box2 && config.box2.alwaysbox2) return true
     else if (isGroup(feedId)) return true
     else return false
+  }
+
+  function isReady(cb) {
+    ready.promise.then(cb)
   }
 
   return {
@@ -160,6 +165,7 @@ exports.init = function (sbot, config) {
     registerIsGroup,
     addOwnDMKey: keys.addDMKey,
     addGroupKey: keys.addGroupKey,
-    setReady
+    setReady,
+    isReady
   }
 }

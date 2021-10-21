@@ -79,6 +79,15 @@ a group id or not.
 can then be used to send messages to the group. Note that keys are not
 persisted in this module.
 
+### setReady()
+
+On startup, once all keys have been added be sure to call `setReady`
+to signal to DB2 that it is now safe to process data.
+
+### isReady(cb)
+
+`cb` will resolve once once all initial keys have been added.
+
 [SSB DB2]: https://github.com/ssb-ngi-pointer/ssb-db2/
 [ssb-tribes]: https://github.com/ssbc/ssb-tribes/
 [ssb-keyring]: https://gitlab.com/ahau/lib/ssb-keyring/

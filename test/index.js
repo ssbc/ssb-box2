@@ -38,6 +38,7 @@ test('db.add bendy butt', (t) => {
   )
 
   sbot.box2.addOwnDMKey(testkey)
+  sbot.box2.setReady()
 
   // fake some keys
   const mfKeys = ssbKeys.generate()
@@ -109,6 +110,7 @@ test('box2', (t) => {
     })
 
   sbotBox2.box2.addOwnDMKey(testkey)
+  sbotBox2.box2.setReady()
 
   let content = { type: 'post', text: 'super secret', recps: [keys.id] }
 
@@ -138,6 +140,8 @@ test('box2', (t) => {
             alwaysbox2: true
           }
         })
+
+      sbotKeys2.box2.setReady()
 
       let contentKeys2 = { type: 'post', text: 'keys2 secret', recps: [keys2.id] }
 
@@ -187,6 +191,7 @@ test('box2 group', (t) => {
 
   sbotBox2.box2.addGroupKey(groupId, groupKey)
   sbotBox2.box2.registerIsGroup((recp) => recp.endsWith('8K-group'))
+  sbotBox2.box2.setReady()
 
   let content = { type: 'post', text: 'super secret', recps: [groupId] }
 
@@ -229,6 +234,7 @@ test('box2 group reindex', (t) => {
 
   alice.box2.addGroupKey(groupId, groupKey)
   alice.box2.registerIsGroup((recp) => recp.endsWith('8K-group'))
+  alice.box2.setReady()
 
   const dirBob = '/tmp/ssb-db2-box2-group-reindex-bob'
   rimraf.sync(dirBob)
@@ -248,6 +254,7 @@ test('box2 group reindex', (t) => {
     })
 
   bob.box2.registerIsGroup((recp) => recp.endsWith('8K-group'))
+  bob.box2.setReady()
   
   let content = { type: 'post', text: 'super secret', recps: [groupId] }
 
