@@ -8,7 +8,7 @@ const { SecretKey } = require('ssb-private-group-keys')
 const bendy = require('ssb-bendy-butt')
 const { isFeed } = require('ssb-ref')
 
-const KeyStore = require('./keystore')
+const Keys = require('./keys')
 
 exports.name = 'box2'
 
@@ -16,7 +16,7 @@ exports.init = function (sbot, config) {
   if (!sbot.db) throw new Error('ssb-db2-box2 requires ssb-db2')
 
   const sbotId = config.keys.id
-  const keystore = KeyStore(config)
+  const keys = Keys(config)
 
   // default
   function isGroup(recipient) {
@@ -43,9 +43,9 @@ exports.init = function (sbot, config) {
 
   function getKeys(recipients) {
     return recipients.reduce((acc, recp) => {
-      if (recp === config.keys.id) return [...acc, ...keystore.ownDMKeys()]
-      else if (isGroup(recp)) return [...acc, keystore.groupKey(recp)]
-      else return [...acc, keystore.sharedDMKey(recp)]
+      if (recp === config.keys.id) return [...acc, ...keys.ownDMKeys()]
+      else if (isGroup(recp)) return [...acc, keys.groupKey(recp)]
+      else return [...acc, keys.sharedDMKey(recp)]
     }, [])
   }
 
@@ -60,7 +60,7 @@ exports.init = function (sbot, config) {
 
     const envelope = box(
       plaintext,
-      keystore.TFKId,
+      keys.TFKId,
       previousMessageId,
       msgKey,
       recipientKeys
@@ -115,7 +115,7 @@ exports.init = function (sbot, config) {
     let authorBFE = bfe.encode(author)
     let previousBFE = bfe.encode(previous)
 
-    const trial_group_keys = keystore.groupKeys()
+    const trial_group_keys = keys.groupKeys()
     const readKeyFromGroup = unboxKey(envelope, authorBFE, previousBFE,
                                       trial_group_keys, { maxAttempts: 1 })
     // NOTE the group recp is only allowed in the first slot,
@@ -124,8 +124,8 @@ exports.init = function (sbot, config) {
       return decryptBox2Msg(envelope, authorBFE, previousBFE, readKeyFromGroup)
 
     const trial_dm_keys = author !== sbotId ?
-          [keystore.sharedDMKey(author), ...keystore.ownDMKeys()] :
-          keystore.ownDMKeys()
+          [keys.sharedDMKey(author), ...keys.ownDMKeys()] :
+          keys.ownDMKeys()
 
     read_key = unboxKey(envelope, authorBFE, previousBFE, trial_dm_keys, {
       maxAttempts: 16,
@@ -158,8 +158,8 @@ exports.init = function (sbot, config) {
     decryptBox2,
 
     registerIsGroup,
-    addOwnDMKey: keystore.addDMKey,
-    addGroupKey: keystore.addGroupKey,
+    addOwnDMKey: keys.addDMKey,
+    addGroupKey: keys.addGroupKey,
     setReady
   }
 }
