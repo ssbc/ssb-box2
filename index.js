@@ -147,7 +147,7 @@ exports.init = function (sbot, config) {
   function supportsBox2(feedId) {
     if (config.box2 && config.box2.alwaysbox2) return true
     else if (isGroup(feedId)) return true
-    else return feedId.endsWith('.bbfeed-v1') || feedId.endsWith('.fusion-v1')
+    else return false
   }
 
   return {
