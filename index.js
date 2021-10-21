@@ -158,7 +158,7 @@ exports.init = function (sbot, config) {
     decryptBox2,
 
     registerIsGroup,
-    addDMKey: keystore.addDMKey,
+    addOwnDMKey: keystore.addDMKey,
     addGroupKey: keystore.addGroupKey,
     setReady
   }

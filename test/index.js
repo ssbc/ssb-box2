@@ -37,7 +37,7 @@ test('db.add bendy butt', (t) => {
     'hex'
   )
 
-  sbot.box2.addDMKey(testkey)
+  sbot.box2.addOwnDMKey(testkey)
 
   // fake some keys
   const mfKeys = ssbKeys.generate()
@@ -108,7 +108,7 @@ test('box2', (t) => {
       }
     })
 
-  sbotBox2.box2.addDMKey(testkey)
+  sbotBox2.box2.addOwnDMKey(testkey)
 
   let content = { type: 'post', text: 'super secret', recps: [keys.id] }
 

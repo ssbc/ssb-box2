@@ -52,7 +52,7 @@ test('box2 message can be read with tribes', (t) => {
     'hex'
   )
 
-  sbot.box2.addDMKey(testkey)
+  sbot.box2.addOwnDMKey(testkey)
 
   let content = { type: 'post', text: 'super secret', recps: [keys.id, db1Keys.id] }
   

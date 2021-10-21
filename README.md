@@ -60,11 +60,13 @@ const config = {
 
 ## Methods
 
-### addDMKey(key)
+### addOwnDMKey(key)
 
-`key` must be a buffer. This key is only used to direct message (DM)
-yourself. For direct messaging other feeds a key is automatically
-derived.
+`key` must be a buffer. By specifying the direct message (DM) for
+yourself, you are free to supply that from any source. This could be a
+key stored in [ssb-keyring], a key derived from the seed in meta feeds
+or simply a temporary key. For direct messaging other feeds a key is
+automatically derived.
 
 ### registerIsGroup(filter)
 
