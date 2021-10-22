@@ -244,6 +244,7 @@ test('box2 group reindex', (t) => {
 
   const bob = SecretStack({ appKey: caps.shs })
     .use(require('ssb-db2'))
+    .use(require('ssb-db2/about-self'))
     .use(require('../'))
     .call(null, {
       keys: keysBob,
