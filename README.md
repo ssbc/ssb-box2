@@ -31,7 +31,7 @@ const testkey = Buffer.from(
 )
 
 sbot.box2.addOwnDMKey(testkey)
-sbot.box2.box2.setReady()
+sbot.box2.setReady()
 
 let content = { type: 'post', text: 'super secret', recps: [keys.id] }
 
