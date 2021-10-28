@@ -1,7 +1,7 @@
 {
   "name": "ssb-db2-box2",
   "description": "Box2 support for SSB DB2",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "homepage": "https://github.com/ssb-ngi-pointer/ssb-db2-box2",
   "repository": {
     "type": "git",
