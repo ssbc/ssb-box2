@@ -29,7 +29,7 @@
     "ssb-backlinks": "^2.1.1",
     "ssb-caps": "1.1.0",
     "ssb-db": "^20.4.0",
-    "ssb-db2": "github:ssb-ngi-pointer/ssb-db2#support-bendy-butt-box2",
+    "ssb-db2": "^2.7.0",
     "ssb-query": "^2.4.5",
     "ssb-tribes": "^2.2.0",
     "ssb-uri2": "^1.5.1",
