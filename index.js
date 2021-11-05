@@ -159,6 +159,10 @@ exports.init = function (sbot, config) {
     ready.promise.then(cb)
   }
 
+  function hasOwnDMKey() {
+    return keys.ownDMKeys().length > 0
+  }
+
   return {
     // db2
     supportsBox2,
@@ -168,6 +172,7 @@ exports.init = function (sbot, config) {
 
     registerIsGroup,
     addOwnDMKey: keys.addDMKey,
+    hasOwnDMKey,
     addGroupKey: keys.addGroupKey,
     setReady,
     isReady

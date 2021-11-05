@@ -37,7 +37,10 @@ test('db.add bendy butt', (t) => {
     'hex'
   )
 
+  t.equal(sbot.box2.hasOwnDMKey(), false)
   sbot.box2.addOwnDMKey(testkey)
+  t.equal(sbot.box2.hasOwnDMKey(), true, 'hasOwnDMKey works')
+
   sbot.box2.setReady()
 
   // fake some keys
