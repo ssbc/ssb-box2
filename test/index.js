@@ -298,3 +298,29 @@ test('box2 group reindex', (t) => {
     })
   })
 })
+
+test('box2 no own key', (t) => {
+  const dirBox2 = '/tmp/ssb-db2-private-box2-own'
+  rimraf.sync(dirBox2)
+  mkdirp.sync(dirBox2)
+
+  const sbotBox2 = SecretStack({ appKey: caps.shs })
+    .use(require('ssb-db2'))
+    .use(require('../'))
+    .call(null, {
+      keys,
+      path: dirBox2,
+      box2: {
+        alwaysbox2: true
+      }
+    })
+
+  sbotBox2.box2.setReady()
+
+  let content = { type: 'post', text: 'super secret', recps: [keys.id] }
+
+  sbotBox2.db.publish(content, (err, privateMsg) => {
+    t.equal(err.message, 'no keys found for recipients: ' + keys.id)
+    sbotBox2.close(t.end)
+  })
+})

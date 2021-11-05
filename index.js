@@ -55,6 +55,9 @@ exports.init = function (sbot, config) {
 
     const recipientKeys = getKeys(content.recps)
 
+    if (recipientKeys.length == 0)
+      throw new Error(`no keys found for recipients: ${content.recps}`)
+
     const plaintext = Buffer.from(JSON.stringify(content), 'utf8')
     const msgKey = new SecretKey().toBuffer()
     let previousMessageId = bfe.encode(previous)
@@ -80,9 +83,10 @@ exports.init = function (sbot, config) {
 
     const recipientKeys = getKeys(recps)
 
-    const msgKey = new SecretKey().toBuffer()
+    if (recipientKeys.length == 0)
+      throw new Error(`no keys found for recipients: ${recps}`)
 
-    // FIXME: consider error if no recipientKeys
+    const msgKey = new SecretKey().toBuffer()
 
     const envelope = box(
       encodedContent,
