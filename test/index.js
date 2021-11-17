@@ -210,6 +210,48 @@ test('box2 group', (t) => {
   })
 })
 
+test('box2 group publishAs', (t) => {
+  const groupKey = Buffer.from(
+    '30720d8f9cbf37f6d7062826f6decac93e308060a8aaaa77e6a4747f40ee1a76',
+    'hex'
+  )
+  const groupId = 'group1.8K-group'
+
+  const dirBox2 = '/tmp/ssb-db2-private-box2-group-publishAs'
+  rimraf.sync(dirBox2)
+  mkdirp.sync(dirBox2)
+
+  const sbotBox2 = SecretStack({ appKey: caps.shs })
+    .use(require('ssb-db2'))
+    .use(require('../'))
+    .call(null, {
+      keys,
+      path: dirBox2,
+      box2: {
+        alwaysbox2: true
+      }
+    })
+
+  sbotBox2.box2.addGroupKey(groupId, groupKey)
+  sbotBox2.box2.registerIsGroup((recp) => recp.endsWith('8K-group'))
+  sbotBox2.box2.setReady()
+
+  let content = { type: 'post', text: 'super secret', recps: [groupId] }
+
+  const newKeys = ssbKeys.generate()
+
+  sbotBox2.db.publishAs(newKeys, content, (err, privateMsg) => {
+    t.error(err, 'no err')
+
+    t.true(privateMsg.value.content.endsWith(".box2"), 'box2 encoded')
+    sbotBox2.db.get(privateMsg.key, (err, msg) => {
+      t.error(err, 'no err')
+      t.equal(msg.content.text, 'super secret')
+      sbotBox2.close(t.end)
+    })
+  })
+})
+
 test('box2 group reindex', (t) => {
   const groupKey = Buffer.from(
     '30720d8f9cbf37f6d7062826f6decac93e308060a8aaaa77e6a4747f40ee1a76',

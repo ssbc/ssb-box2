@@ -50,7 +50,7 @@ exports.init = function (sbot, config) {
     }, [])
   }
 
-  function encryptClassic(content, previous) {
+  function encryptClassic(keys, content, previous) {
     validateRecipients(content.recps)
 
     const recipientKeys = getKeys(content.recps)
@@ -61,10 +61,11 @@ exports.init = function (sbot, config) {
     const plaintext = Buffer.from(JSON.stringify(content), 'utf8')
     const msgKey = new SecretKey().toBuffer()
     let previousMessageId = bfe.encode(previous)
+    const authorId = bfe.encode(keys.id)
 
     const envelope = box(
       plaintext,
-      keys.TFKId,
+      authorId,
       previousMessageId,
       msgKey,
       recipientKeys
