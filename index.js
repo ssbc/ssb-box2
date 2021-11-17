@@ -105,10 +105,10 @@ exports.init = function (sbot, config) {
   const FEED = bfe.bfeNamedTypes['feed']
   const CLASSIC_FEED_TF = Buffer.from([FEED.code, FEED.formats['classic'].code])
 
-  function decryptBox2Msg(envelope, feed_id, prev_msg_id, read_key) {
-    const plaintext = unboxBody(envelope, feed_id, prev_msg_id, read_key)
+  function decryptBox2Msg(envelope, feedId, prevMsgId, readKey) {
+    const plaintext = unboxBody(envelope, feedId, prevMsgId, readKey)
     if (plaintext) {
-      if (feed_id.slice(0, 2).equals(CLASSIC_FEED_TF))
+      if (feedId.slice(0, 2).equals(CLASSIC_FEED_TF))
         return JSON.parse(plaintext.toString('utf8'))
       else
         return bendy.decodeBox2(plaintext)
@@ -121,24 +121,24 @@ exports.init = function (sbot, config) {
     let authorBFE = bfe.encode(author)
     let previousBFE = bfe.encode(previous)
 
-    const trial_group_keys = keys.groupKeys()
+    const trialGroupKeys = keys.groupKeys()
     const readKeyFromGroup = unboxKey(envelope, authorBFE, previousBFE,
-                                      trial_group_keys, { maxAttempts: 1 })
+                                      trialGroupKeys, { maxAttempts: 1 })
     // NOTE the group recp is only allowed in the first slot,
     // so we only test group keys in that slot (maxAttempts: 1)
     if (readKeyFromGroup)
       return decryptBox2Msg(envelope, authorBFE, previousBFE, readKeyFromGroup)
 
-    const trial_dm_keys = author !== sbotId ?
+    const trialDMKeys = author !== sbotId ?
           [keys.sharedDMKey(author), ...keys.ownDMKeys()] :
           keys.ownDMKeys()
 
-    read_key = unboxKey(envelope, authorBFE, previousBFE, trial_dm_keys, {
+    readKey = unboxKey(envelope, authorBFE, previousBFE, trialDMKeys, {
       maxAttempts: 16,
     })
 
-    if (read_key)
-      return decryptBox2Msg(envelope, authorBFE, previousBFE, read_key)
+    if (readKey)
+      return decryptBox2Msg(envelope, authorBFE, previousBFE, readKey)
     else return ''
   }
 
