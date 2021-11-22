@@ -344,6 +344,153 @@ test('box2 group reindex', (t) => {
   })
 })
 
+test('box2 group reindex larger', (t) => {
+  const groupKey = Buffer.from(
+    '30720d8f9cbf37f6d7062826f6decac93e308060a8aaaa77e6a4747f40ee1a76',
+    'hex'
+  )
+  const groupId = 'group1.8K-group'
+
+  const groupKey2 = Buffer.from(
+    '40720d8f9cbf37f6d7062826f6decac93e308060a8aaaa77e6a4747f40ee1a76',
+    'hex'
+  )
+  const groupId2 = 'group2.8K-group'
+
+  const dirAlice = '/tmp/ssb-db2-box2-group-reindex2-alice'
+  rimraf.sync(dirAlice)
+  mkdirp.sync(dirAlice)
+
+  const keysAlice = ssbKeys.loadOrCreateSync(path.join(dirAlice, 'secret'))
+
+  const alice = SecretStack({ appKey: caps.shs })
+    .use(require('ssb-db2'))
+    .use(require('../'))
+    .call(null, {
+      keys: keysAlice,
+      path: dirAlice
+    })
+
+  alice.box2.addGroupKey(groupId, groupKey)
+  alice.box2.addGroupKey(groupId2, groupKey2)
+  alice.box2.registerIsGroup((recp) => recp.endsWith('8K-group'))
+  alice.box2.setReady()
+
+  const dirBob = '/tmp/ssb-db2-box2-group-reindex2-bob'
+  rimraf.sync(dirBob)
+  mkdirp.sync(dirBob)
+
+  const keysBob = ssbKeys.loadOrCreateSync(path.join(dirBob, 'secret'))
+
+  const bob = SecretStack({ appKey: caps.shs })
+    .use(require('ssb-db2'))
+    .use(require('ssb-db2/about-self'))
+    .use(require('../'))
+    .call(null, {
+      keys: keysBob,
+      path: dirBob
+    })
+
+  bob.box2.registerIsGroup((recp) => recp.endsWith('8K-group'))
+  bob.box2.setReady()
+
+  let content0 = { type: 'about', text: 'not super secret1' }
+  let content1 = { type: 'post', text: 'super secret2', recps: [groupId2] }
+  let content2 = { type: 'wierd' }
+  let content3 = { type: 'about', text: 'super secret3', recps: [groupId] }
+  let content4 = { type: 'post', text: 'super secret4', recps: [groupId] }
+
+  alice.db.publish(content0, (err, msg0) => {
+    alice.db.publish(content1, (err, msg1) => {
+      alice.db.publish(content2, (err, msg2) => {
+        alice.db.publish(content3, (err, msg3) => {
+          alice.db.publish(content4, (err, msg4) => {
+            t.true(msg1.value.content.endsWith(".box2"), 'box2 encoded')
+            t.true(msg3.value.content.endsWith(".box2"), 'box2 encoded')
+            t.true(msg4.value.content.endsWith(".box2"), 'box2 encoded')
+
+            // first bob gets 2 messages, indexes those
+            bob.db.add(msg0.value, (err, m) => {
+              bob.db.add(msg1.value, (err, m) => {
+                pull(
+                  bob.db.query(
+                    where(and(author(alice.id), type('about'))),
+                    toPullStream()
+                  ),
+                  pull.collect((err, msgs) => {
+                    t.equal(msgs.length, 1)
+                    const msg = msgs[0]
+                    t.equal(msg.value.content.text, 'not super secret1')
+
+                    // bob gets the rest
+                    bob.db.add(msg2.value, (err, m) => {
+                      bob.db.add(msg3.value, (err, m) => {
+                        bob.db.add(msg4.value, (err, m) => {
+
+                          bob.box2.addGroupKey(groupId, groupKey)
+
+                          bob.db.reindexEncrypted(() => {
+                            pull(
+                              bob.db.query(
+                                where(and(author(alice.id), type('post'))),
+                                toPullStream()
+                              ),
+                              pull.collect((err, msgs) => {
+                                t.equal(msgs.length, 1)
+                                const msg1 = msgs[0]
+                                t.equal(msg1.value.content.text, 'super secret4')
+
+                                bob.box2.addGroupKey(groupId2, groupKey2)
+
+                                bob.db.reindexEncrypted(() => {
+                                  pull(
+                                    bob.db.query(
+                                      where(and(author(alice.id), type('post'))),
+                                      toPullStream()
+                                    ),
+                                    pull.collect((err, msgs) => {
+                                      t.equal(msgs.length, 2)
+
+                                      const msg1 = msgs[0]
+                                      t.equal(msg1.value.content.text, 'super secret2')
+                                      const msg2 = msgs[1]
+                                      t.equal(msg2.value.content.text, 'super secret4')
+
+                                      pull(
+                                        bob.db.query(
+                                          where(and(author(alice.id), type('about'))),
+                                          toPullStream()
+                                        ),
+                                        pull.collect((err, msgs) => {
+                                          t.equal(msgs.length, 2)
+                                          const msg1 = msgs[0]
+                                          t.equal(msg1.value.content.text, 'not super secret1')
+                                          const msg2 = msgs[1]
+                                          t.equal(msg2.value.content.text, 'super secret3')
+
+                                          bob.close(() => alice.close(t.end))
+                                        })
+                                      )
+                                    })
+                                  )
+                                })
+                              })
+                            )
+                          })
+                        })
+                      })
+                    })
+                  })
+                )
+              })
+            })
+          })
+        })
+      })
+    })
+  })
+})
+
 test('box2 no own key', (t) => {
   const dirBox2 = '/tmp/ssb-db2-private-box2-own'
   rimraf.sync(dirBox2)
