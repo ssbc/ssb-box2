@@ -80,6 +80,11 @@ a group id or not.
 can then be used to send messages to the group. Note that keys are not
 persisted in this module.
 
+### getGroupKey(groupId)
+
+Returns the `groupKey` as a buffer or undefined if group key is not
+found.
+
 ### setReady()
 
 On startup, once all keys have been added be sure to call `setReady`

@@ -164,6 +164,12 @@ exports.init = function (sbot, config) {
     return keys.ownDMKeys().length > 0
   }
 
+  function getGroupKey(id) {
+    const key = keys.groupKey(id)
+    if (key) return key.key
+    else return key // undefined
+  }
+
   return {
     // db2
     supportsBox2,
@@ -175,6 +181,7 @@ exports.init = function (sbot, config) {
     addOwnDMKey: keys.addDMKey,
     hasOwnDMKey,
     addGroupKey: keys.addGroupKey,
+    getGroupKey,
     setReady,
     isReady
   }

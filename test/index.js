@@ -198,6 +198,8 @@ test('box2 group', (t) => {
 
   let content = { type: 'post', text: 'super secret', recps: [groupId] }
 
+  t.equal(sbotBox2.box2.getGroupKey(groupId), groupKey, 'getGroupKey works')
+  
   sbotBox2.db.publish(content, (err, privateMsg) => {
     t.error(err, 'no err')
 
