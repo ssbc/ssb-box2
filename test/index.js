@@ -12,6 +12,7 @@ const caps = require('ssb-caps')
 const pull = require('pull-stream')
 const bendyButt = require('ssb-bendy-butt')
 const SSBURI = require('ssb-uri2')
+const bfe = require('ssb-bfe')
 
 const {
   and,
@@ -22,23 +23,73 @@ const {
   toPullStream,
 } = require('ssb-db2/operators')
 
-const dir = '/tmp/ssb-db2-box2'
+test('buttwoo encode/decode', (t) => {
+  const dir = '/tmp/ssb-db2-buttwoo'
+  rimraf.sync(dir)
+  mkdirp.sync(dir)
 
-rimraf.sync(dir)
-mkdirp.sync(dir)
+  const keys = ssbKeys.loadOrCreateSync(path.join(dir, 'secret'))
 
-const keys = ssbKeys.loadOrCreateSync(path.join(dir, 'secret'))
+  const sbot2 = SecretStack({ appKey: caps.shs })
+    .use(require('ssb-db2'))
+    .use(require('../'))
+    .call(null, {
+      keys,
+      path: dir,
+      box2: {
+        alwaysbox2: true,
+      },
+    })
 
-const sbot = SecretStack({ appKey: caps.shs })
-  .use(require('ssb-db2'))
-  .use(require('../'))
-  .call(null, {
-    keys,
-    path: dir,
-  })
-const db = sbot.db
+  const testkey = Buffer.from(
+    '30720d8f9cbf37f6d7062826f6decac93e308060a8aaaa77e6a4747f40ee1a76',
+    'hex'
+  )
+
+  sbot2.box2.addOwnDMKey(testkey)
+  sbot2.box2.setReady()
+
+  // fake id
+  const classicUri = SSBURI.fromFeedSigil(keys.id)
+  const { type, data } = SSBURI.decompose(classicUri)
+  const buttwooUri = SSBURI.compose({ type, format: 'buttwoo-v1', data })
+  keys.id = buttwooUri
+
+  const contentBuffer = Buffer.from(JSON.stringify({ msg: 'hello world' }))
+  const recps = [keys.id]
+  const previousBFE = bfe.encode(null)
+  const authorBFE = bfe.encode(keys.id)
+
+  const envelope = sbot2.box2.encryptContentBuffer(
+    authorBFE,
+    contentBuffer,
+    previousBFE,
+    recps
+  )
+
+  const envelopeStr = envelope.toString('base64') + '.box2'
+  const decrypted = sbot2.box2.decryptBox2(envelopeStr, keys.id, null)
+  t.deepEqual(decrypted, contentBuffer, 'encode/decode work')
+  sbot2.close(t.end)
+})
+
+const keys = ssbKeys.generate()
 
 test('db.add bendy butt', (t) => {
+  const dir = '/tmp/ssb-db2-box2'
+
+  rimraf.sync(dir)
+  mkdirp.sync(dir)
+
+  const sbot = SecretStack({ appKey: caps.shs })
+    .use(require('ssb-db2'))
+    .use(require('../'))
+    .call(null, {
+      keys,
+      path: dir,
+    })
+  const db = sbot.db
+
   const testkey = Buffer.from(
     '30720d8f9cbf37f6d7062826f6decac93e308060a8aaaa77e6a4747f40ee1a76',
     'hex'
