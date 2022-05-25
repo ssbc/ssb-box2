@@ -6,7 +6,8 @@ const bfe = require('ssb-bfe')
 const { box, unboxKey, unboxBody } = require('envelope-js')
 const { SecretKey } = require('ssb-private-group-keys')
 const bendy = require('ssb-bendy-butt')
-const { isFeed } = require('ssb-ref')
+const { isButtwooV1FeedSSBURI } = require('ssb-uri2')
+const ref = require('ssb-ref')
 const DeferredPromise = require('p-defer')
 
 const Keys = require('./keys')
@@ -26,6 +27,10 @@ exports.init = function (sbot, config) {
 
   function registerIsGroup(f) {
     isGroup = f
+  }
+
+  function isFeed(f) {
+    return ref.isFeed(f) || isButtwooV1FeedSSBURI(f)
   }
 
   function validateRecipients(recipients) {
@@ -74,9 +79,9 @@ exports.init = function (sbot, config) {
     return envelope.toString('base64') + '.box2'
   }
 
-  function encryptBendyButt(
+  function encryptContentBuffer(
     encodedAuthor,
-    encodedContent,
+    contentBuffer,
     encodedPrevious,
     recps
   ) {
@@ -90,25 +95,45 @@ exports.init = function (sbot, config) {
     const msgKey = new SecretKey().toBuffer()
 
     const envelope = box(
-      encodedContent,
+      contentBuffer,
       encodedAuthor,
       encodedPrevious,
       msgKey,
       recipientKeys
     )
 
-    // maybe just return envelope directly?
+    return envelope
+  }
+
+  function encryptBendyButt(
+    encodedAuthor,
+    encodedContent,
+    encodedPrevious,
+    recps
+  ) {
+    const envelope = encryptContentBuffer(
+      encodedAuthor,
+      encodedContent,
+      encodedPrevious,
+      recps
+    )
+
     return envelope.toString('base64') + '.box2'
   }
 
   const FEED = bfe.bfeNamedTypes['feed']
   const CLASSIC_FEED_TF = Buffer.from([FEED.code, FEED.formats['classic'].code])
+  const BUTTWOO_FEED_TF = Buffer.from([
+    FEED.code,
+    FEED.formats['buttwoo-v1'].code,
+  ])
 
   function decryptBox2Msg(envelope, feedId, prevMsgId, readKey) {
     const plaintext = unboxBody(envelope, feedId, prevMsgId, readKey)
     if (plaintext) {
       if (feedId.slice(0, 2).equals(CLASSIC_FEED_TF))
         return JSON.parse(plaintext.toString('utf8'))
+      else if (feedId.slice(0, 2).equals(BUTTWOO_FEED_TF)) return plaintext
       else return bendy.decodeBox2(plaintext)
     } else return ''
   }
@@ -178,6 +203,7 @@ exports.init = function (sbot, config) {
     supportsBox2,
     encryptClassic,
     encryptBendyButt,
+    encryptContentBuffer,
     decryptBox2,
 
     registerIsGroup,
