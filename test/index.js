@@ -13,7 +13,14 @@ const pull = require('pull-stream')
 const bendyButt = require('ssb-bendy-butt')
 const SSBURI = require('ssb-uri2')
 
-const { and, or, where, author, type, toPullStream } = require('ssb-db2/operators')
+const {
+  and,
+  or,
+  where,
+  author,
+  type,
+  toPullStream,
+} = require('ssb-db2/operators')
 
 const dir = '/tmp/ssb-db2-box2'
 
@@ -23,12 +30,12 @@ mkdirp.sync(dir)
 const keys = ssbKeys.loadOrCreateSync(path.join(dir, 'secret'))
 
 const sbot = SecretStack({ appKey: caps.shs })
- .use(require('ssb-db2'))
- .use(require('../'))
- .call(null, {
-   keys,
-   path: dir,
- })
+  .use(require('ssb-db2'))
+  .use(require('../'))
+  .call(null, {
+    keys,
+    path: dir,
+  })
 const db = sbot.db
 
 test('db.add bendy butt', (t) => {
@@ -53,17 +60,17 @@ test('db.add bendy butt', (t) => {
   const mainKeys = ssbKeys.generate()
 
   const content = {
-    type: "metafeed/add",
-    feedpurpose: "secret purpose",
+    type: 'metafeed/add',
+    feedpurpose: 'secret purpose',
     subfeed: mainKeys.id,
     metafeed: mfKeys.id,
     recps: [keys.id],
     tangles: {
       metafeed: {
         root: null,
-        previous: null
-      }
-    }
+        previous: null,
+      },
+    },
   }
 
   const bbmsg = bendyButt.encodeNew(
@@ -78,11 +85,11 @@ test('db.add bendy butt', (t) => {
   )
 
   const msgVal = bendyButt.decode(bbmsg)
-  
+
   db.add(msgVal, (err, privateMsg) => {
     t.error(err, 'no err')
 
-    t.true(privateMsg.value.content.endsWith(".box2"), 'box2 encoded')
+    t.true(privateMsg.value.content.endsWith('.box2'), 'box2 encoded')
     db.get(privateMsg.key, (err, msg) => {
       t.error(err, 'no err')
       t.equal(msg.content.feedpurpose, 'secret purpose')
@@ -108,8 +115,8 @@ test('box2', (t) => {
       keys,
       path: dirBox2,
       box2: {
-        alwaysbox2: true
-      }
+        alwaysbox2: true,
+      },
     })
 
   sbotBox2.box2.addOwnDMKey(testkey)
@@ -120,7 +127,7 @@ test('box2', (t) => {
   sbotBox2.db.publish(content, (err, privateMsg) => {
     t.error(err, 'no err')
 
-    t.true(privateMsg.value.content.endsWith(".box2"), 'box2 encoded')
+    t.true(privateMsg.value.content.endsWith('.box2'), 'box2 encoded')
     sbotBox2.db.get(privateMsg.key, (err, msg) => {
       t.error(err, 'no err')
       t.equal(msg.content.text, 'super secret')
@@ -140,13 +147,17 @@ test('box2', (t) => {
           keys: keys2,
           path: dirKeys2,
           box2: {
-            alwaysbox2: true
-          }
+            alwaysbox2: true,
+          },
         })
 
       sbotKeys2.box2.setReady()
 
-      let contentKeys2 = { type: 'post', text: 'keys2 secret', recps: [keys2.id] }
+      let contentKeys2 = {
+        type: 'post',
+        text: 'keys2 secret',
+        recps: [keys2.id],
+      }
 
       sbotBox2.db.publish(contentKeys2, (err, privateKeys2Msg) => {
         sbotKeys2.db.add(privateMsg.value, (err) => {
@@ -158,7 +169,10 @@ test('box2', (t) => {
 
               sbotKeys2.db.get(privateMsg.key, (err, msg) => {
                 t.error(err, 'no err')
-                t.true(privateMsg.value.content.endsWith(".box2"), 'box2 encoded')
+                t.true(
+                  privateMsg.value.content.endsWith('.box2'),
+                  'box2 encoded'
+                )
 
                 sbotBox2.close(() => sbotKeys2.close(t.end))
               })
@@ -188,8 +202,8 @@ test('box2 group', (t) => {
       keys,
       path: dirBox2,
       box2: {
-        alwaysbox2: true
-      }
+        alwaysbox2: true,
+      },
     })
 
   sbotBox2.box2.addGroupKey(groupId, groupKey)
@@ -199,11 +213,11 @@ test('box2 group', (t) => {
   let content = { type: 'post', text: 'super secret', recps: [groupId] }
 
   t.equal(sbotBox2.box2.getGroupKey(groupId), groupKey, 'getGroupKey works')
-  
+
   sbotBox2.db.publish(content, (err, privateMsg) => {
     t.error(err, 'no err')
 
-    t.true(privateMsg.value.content.endsWith(".box2"), 'box2 encoded')
+    t.true(privateMsg.value.content.endsWith('.box2'), 'box2 encoded')
     sbotBox2.db.get(privateMsg.key, (err, msg) => {
       t.error(err, 'no err')
       t.equal(msg.content.text, 'super secret')
@@ -230,8 +244,8 @@ test('box2 group publishAs', (t) => {
       keys,
       path: dirBox2,
       box2: {
-        alwaysbox2: true
-      }
+        alwaysbox2: true,
+      },
     })
 
   sbotBox2.box2.addGroupKey(groupId, groupKey)
@@ -245,7 +259,7 @@ test('box2 group publishAs', (t) => {
   sbotBox2.db.publishAs(newKeys, content, (err, privateMsg) => {
     t.error(err, 'no err')
 
-    t.true(privateMsg.value.content.endsWith(".box2"), 'box2 encoded')
+    t.true(privateMsg.value.content.endsWith('.box2'), 'box2 encoded')
     sbotBox2.db.get(privateMsg.key, (err, msg) => {
       t.error(err, 'no err')
       t.equal(msg.content.text, 'super secret')
@@ -275,8 +289,8 @@ test('box2 group reindex', (t) => {
       keys: keysAlice,
       path: dirAlice,
       box2: {
-        alwaysbox2: true
-      }
+        alwaysbox2: true,
+      },
     })
 
   alice.box2.addGroupKey(groupId, groupKey)
@@ -297,19 +311,19 @@ test('box2 group reindex', (t) => {
       keys: keysBob,
       path: dirBob,
       box2: {
-        alwaysbox2: true
-      }
+        alwaysbox2: true,
+      },
     })
 
   bob.box2.registerIsGroup((recp) => recp.endsWith('8K-group'))
   bob.box2.setReady()
-  
+
   let content = { type: 'post', text: 'super secret', recps: [groupId] }
 
   alice.db.publish(content, (err, privateMsg) => {
     t.error(err, 'no err')
 
-    t.true(privateMsg.value.content.endsWith(".box2"), 'box2 encoded')
+    t.true(privateMsg.value.content.endsWith('.box2'), 'box2 encoded')
 
     bob.db.add(privateMsg.value, (err, m) => {
       pull(
@@ -322,7 +336,7 @@ test('box2 group reindex', (t) => {
         ),
         pull.collect((err, msgs) => {
           const msg = msgs[0]
-          t.true(msg.value.content.endsWith(".box2"), 'box2 encoded')
+          t.true(msg.value.content.endsWith('.box2'), 'box2 encoded')
 
           bob.box2.addGroupKey(groupId, groupKey)
 
@@ -370,7 +384,7 @@ test('box2 group reindex larger', (t) => {
     .use(require('../'))
     .call(null, {
       keys: keysAlice,
-      path: dirAlice
+      path: dirAlice,
     })
 
   alice.box2.addGroupKey(groupId, groupKey)
@@ -390,7 +404,7 @@ test('box2 group reindex larger', (t) => {
     .use(require('../'))
     .call(null, {
       keys: keysBob,
-      path: dirBob
+      path: dirBob,
     })
 
   bob.box2.registerIsGroup((recp) => recp.endsWith('8K-group'))
@@ -407,9 +421,9 @@ test('box2 group reindex larger', (t) => {
       alice.db.publish(content2, (err, msg2) => {
         alice.db.publish(content3, (err, msg3) => {
           alice.db.publish(content4, (err, msg4) => {
-            t.true(msg1.value.content.endsWith(".box2"), 'box2 encoded')
-            t.true(msg3.value.content.endsWith(".box2"), 'box2 encoded')
-            t.true(msg4.value.content.endsWith(".box2"), 'box2 encoded')
+            t.true(msg1.value.content.endsWith('.box2'), 'box2 encoded')
+            t.true(msg3.value.content.endsWith('.box2'), 'box2 encoded')
+            t.true(msg4.value.content.endsWith('.box2'), 'box2 encoded')
 
             // first bob gets 2 messages, indexes those
             bob.db.add(msg0.value, (err, m) => {
@@ -428,7 +442,6 @@ test('box2 group reindex larger', (t) => {
                     bob.db.add(msg2.value, (err, m) => {
                       bob.db.add(msg3.value, (err, m) => {
                         bob.db.add(msg4.value, (err, m) => {
-
                           bob.box2.addGroupKey(groupId, groupKey)
 
                           bob.db.reindexEncrypted(() => {
@@ -440,35 +453,54 @@ test('box2 group reindex larger', (t) => {
                               pull.collect((err, msgs) => {
                                 t.equal(msgs.length, 1)
                                 const msg1 = msgs[0]
-                                t.equal(msg1.value.content.text, 'super secret4')
+                                t.equal(
+                                  msg1.value.content.text,
+                                  'super secret4'
+                                )
 
                                 bob.box2.addGroupKey(groupId2, groupKey2)
 
                                 bob.db.reindexEncrypted(() => {
                                   pull(
                                     bob.db.query(
-                                      where(and(author(alice.id), type('post'))),
+                                      where(
+                                        and(author(alice.id), type('post'))
+                                      ),
                                       toPullStream()
                                     ),
                                     pull.collect((err, msgs) => {
                                       t.equal(msgs.length, 2)
 
                                       const msg1 = msgs[0]
-                                      t.equal(msg1.value.content.text, 'super secret2')
+                                      t.equal(
+                                        msg1.value.content.text,
+                                        'super secret2'
+                                      )
                                       const msg2 = msgs[1]
-                                      t.equal(msg2.value.content.text, 'super secret4')
+                                      t.equal(
+                                        msg2.value.content.text,
+                                        'super secret4'
+                                      )
 
                                       pull(
                                         bob.db.query(
-                                          where(and(author(alice.id), type('about'))),
+                                          where(
+                                            and(author(alice.id), type('about'))
+                                          ),
                                           toPullStream()
                                         ),
                                         pull.collect((err, msgs) => {
                                           t.equal(msgs.length, 2)
                                           const msg1 = msgs[0]
-                                          t.equal(msg1.value.content.text, 'not super secret1')
+                                          t.equal(
+                                            msg1.value.content.text,
+                                            'not super secret1'
+                                          )
                                           const msg2 = msgs[1]
-                                          t.equal(msg2.value.content.text, 'super secret3')
+                                          t.equal(
+                                            msg2.value.content.text,
+                                            'super secret3'
+                                          )
 
                                           bob.close(() => alice.close(t.end))
                                         })
@@ -505,8 +537,8 @@ test('box2 no own key', (t) => {
       keys,
       path: dirBox2,
       box2: {
-        alwaysbox2: true
-      }
+        alwaysbox2: true,
+      },
     })
 
   sbotBox2.box2.setReady()

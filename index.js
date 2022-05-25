@@ -60,7 +60,7 @@ exports.init = function (sbot, config) {
 
     const plaintext = Buffer.from(JSON.stringify(content), 'utf8')
     const msgKey = new SecretKey().toBuffer()
-    let previousMessageId = bfe.encode(previous)
+    const previousMessageId = bfe.encode(previous)
     const authorId = bfe.encode(keys.id)
 
     const envelope = box(
@@ -101,7 +101,6 @@ exports.init = function (sbot, config) {
     return envelope.toString('base64') + '.box2'
   }
 
-
   const FEED = bfe.bfeNamedTypes['feed']
   const CLASSIC_FEED_TF = Buffer.from([FEED.code, FEED.formats['classic'].code])
 
@@ -110,30 +109,34 @@ exports.init = function (sbot, config) {
     if (plaintext) {
       if (feedId.slice(0, 2).equals(CLASSIC_FEED_TF))
         return JSON.parse(plaintext.toString('utf8'))
-      else
-        return bendy.decodeBox2(plaintext)
-    }
-    else return ''
+      else return bendy.decodeBox2(plaintext)
+    } else return ''
   }
 
   function decryptBox2(ciphertext, author, previous) {
     const envelope = Buffer.from(ciphertext.replace('.box2', ''), 'base64')
-    let authorBFE = bfe.encode(author)
-    let previousBFE = bfe.encode(previous)
+    const authorBFE = bfe.encode(author)
+    const previousBFE = bfe.encode(previous)
 
     const trialGroupKeys = keys.groupKeys()
-    const readKeyFromGroup = unboxKey(envelope, authorBFE, previousBFE,
-                                      trialGroupKeys, { maxAttempts: 1 })
+    const readKeyFromGroup = unboxKey(
+      envelope,
+      authorBFE,
+      previousBFE,
+      trialGroupKeys,
+      { maxAttempts: 1 }
+    )
     // NOTE the group recp is only allowed in the first slot,
     // so we only test group keys in that slot (maxAttempts: 1)
     if (readKeyFromGroup)
       return decryptBox2Msg(envelope, authorBFE, previousBFE, readKeyFromGroup)
 
-    const trialDMKeys = author !== sbotId ?
-          [keys.sharedDMKey(author), ...keys.ownDMKeys()] :
-          keys.ownDMKeys()
+    const trialDMKeys =
+      author !== sbotId
+        ? [keys.sharedDMKey(author), ...keys.ownDMKeys()]
+        : keys.ownDMKeys()
 
-    readKey = unboxKey(envelope, authorBFE, previousBFE, trialDMKeys, {
+    const readKey = unboxKey(envelope, authorBFE, previousBFE, trialDMKeys, {
       maxAttempts: 16,
     })
 
@@ -183,6 +186,6 @@ exports.init = function (sbot, config) {
     addGroupKey: keys.addGroupKey,
     getGroupKey,
     setReady,
-    isReady
+    isReady,
   }
 }

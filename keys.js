@@ -6,7 +6,7 @@ const { directMessageKey } = require('ssb-private-group-keys')
 const bfe = require('ssb-bfe')
 const { keySchemes } = require('private-group-spec')
 
-module.exports = function (config, isGroup) {
+module.exports = function (config) {
   const dmCache = {}
 
   const buildDMKey = directMessageKey.easy(config.keys)
@@ -17,7 +17,7 @@ module.exports = function (config, isGroup) {
     return dmCache[author]
   }
 
-  let ownKeys = []
+  const ownKeys = []
 
   function addDMKey(key) {
     ownKeys.push(key)
@@ -29,7 +29,7 @@ module.exports = function (config, isGroup) {
     })
   }
 
-  let allGroupKeys = {}
+  const allGroupKeys = {}
 
   function addGroupKey(id, key) {
     allGroupKeys[id] = key
