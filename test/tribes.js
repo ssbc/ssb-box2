@@ -22,15 +22,15 @@ const dir = readyDir('/tmp/ssb-db2-box2-tribes')
 const keys = ssbKeys.loadOrCreateSync(path.join(dir, 'secret'))
 
 const sbot = SecretStack({ appKey: caps.shs })
- .use(require('ssb-db2'))
- .use(require('../'))
- .call(null, {
-   keys,
-   path: dir,
-   box2: {
-     alwaysbox2: true
-   }
- })
+  .use(require('ssb-db2'))
+  .use(require('../'))
+  .call(null, {
+    keys,
+    path: dir,
+    box2: {
+      alwaysbox2: true,
+    },
+  })
 const db = sbot.db
 
 const db1Dir = readyDir('/tmp/ssb-db2-box2-tribes-db1')
@@ -55,8 +55,12 @@ test('box2 message can be read with tribes', (t) => {
   sbot.box2.addOwnDMKey(testkey)
   sbot.box2.setReady()
 
-  let content = { type: 'post', text: 'super secret', recps: [keys.id, db1Keys.id] }
-  
+  let content = {
+    type: 'post',
+    text: 'super secret',
+    recps: [keys.id, db1Keys.id],
+  }
+
   db.publish(content, (err, privateMsg) => {
     t.error(err, 'no err')
 
@@ -75,8 +79,12 @@ test('box2 message can be read with tribes', (t) => {
 })
 
 test('second box2 message can be read with tribes', (t) => {
-  let content = { type: 'post', text: 'super secret 2', recps: [keys.id, db1Keys.id] }
-  
+  let content = {
+    type: 'post',
+    text: 'super secret 2',
+    recps: [keys.id, db1Keys.id],
+  }
+
   db.publish(content, (err, privateMsg) => {
     t.error(err, 'no err')
 
@@ -95,8 +103,12 @@ test('second box2 message can be read with tribes', (t) => {
 })
 
 test('we can decrypt messages created with tribes', (t) => {
-  let content = { type: 'post', text: 'super secret 3', recps: [keys.id, db1Keys.id] }
-  
+  let content = {
+    type: 'post',
+    text: 'super secret 3',
+    recps: [keys.id, db1Keys.id],
+  }
+
   db1Sbot.publish(content, (err, privateMsg) => {
     t.error(err, 'no err')
 
@@ -111,8 +123,12 @@ test('we can decrypt messages created with tribes', (t) => {
 })
 
 test('we can decrypt messages created with tribes 2', (t) => {
-  let content = { type: 'post', text: 'super secret 4', recps: [keys.id, db1Keys.id] }
-  
+  let content = {
+    type: 'post',
+    text: 'super secret 4',
+    recps: [keys.id, db1Keys.id],
+  }
+
   db1Sbot.publish(content, (err, privateMsg) => {
     t.error(err, 'no err')
 
