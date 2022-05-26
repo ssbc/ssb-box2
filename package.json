@@ -13,14 +13,14 @@
     "LICENSES/*"
   ],
   "dependencies": {
-    "envelope-js": "^1.1.0",
+    "envelope-js": "^1.3.0",
     "p-defer": "^3.0.0",
-    "private-group-spec": "^1.0.0",
-    "ssb-bendy-butt": "^0.12.1",
-    "ssb-bfe": "^3.1.1",
-    "ssb-private-group-keys": "^0.4.0",
+    "private-group-spec": "^1.1.2",
+    "ssb-bendy-butt": "^0.12.5",
+    "ssb-bfe": "^3.2.0",
+    "ssb-private-group-keys": "^0.4.1",
     "ssb-ref": "^2.16.0",
-    "ssb-uri2": "^1.7.2"
+    "ssb-uri2": "^1.8.1"
   },
   "devDependencies": {
     "c8": "^7.11.0",
