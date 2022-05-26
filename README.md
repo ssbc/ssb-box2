@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2021 Anders Rune Jensen
+
+SPDX-License-Identifier: CC0-1.0
+-->
+
 # SSB-DB2-Box2
 
 A module for working with box2 in [SSB DB2]. Messages created using
@@ -17,7 +23,7 @@ const keys = ssbKeys.loadOrCreateSync(path.join(dir, 'secret'))
 const sbot = SecretStack({ caps })
   .use(require('ssb-db2'))
   .use(require('ssb-db2-box2'))
-  .call(null, { 
+  .call(null, {
      path: './',
      keys,
      box2: {
@@ -49,7 +55,7 @@ const config = {
   box2: {
     /*
       This variable is only for DMs. Group messages are always using box2.
-      For DMs, the problem is figuring out if the other side supports 
+      For DMs, the problem is figuring out if the other side supports
       box2 or not. We expect to be able to use metafeeds to determine this
       in the future. For now you can use this variable to use box2 for all
       DMs, otherwise box1 will be used for all.
@@ -72,7 +78,7 @@ automatically derived.
 ### registerIsGroup(filter)
 
 `filter` takes a recp and must return a boolean indicating if recp is
-a group id or not. 
+a group id or not.
 
 ### addGroupKey(groupId, groupKey)
 
