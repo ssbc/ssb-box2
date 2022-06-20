@@ -9,8 +9,6 @@ const rimraf = require('rimraf')
 const mkdirp = require('mkdirp')
 const SecretStack = require('secret-stack')
 const caps = require('ssb-caps')
-const bendy = require('ssb-bendy-butt')
-const timestamp = require('monotonic-timestamp')
 
 function readyDir(dir) {
   rimraf.sync(dir)
@@ -53,15 +51,15 @@ test('box2 message can be read with tribes', (t) => {
   )
 
   sbot.box2.addOwnDMKey(testkey)
-  sbot.box2.setReady()
 
-  let content = {
-    type: 'post',
-    text: 'super secret',
+  const opts = {
+    keys,
+    content: { type: 'post', text: 'super secret' },
+    encryptionFormat: 'box2',
     recps: [keys.id, db1Keys.id],
   }
 
-  db.publish(content, (err, privateMsg) => {
+  db.create(opts, (err, privateMsg) => {
     t.error(err, 'no err')
 
     t.equal(typeof privateMsg.value.content, 'string')
@@ -79,13 +77,14 @@ test('box2 message can be read with tribes', (t) => {
 })
 
 test('second box2 message can be read with tribes', (t) => {
-  let content = {
-    type: 'post',
-    text: 'super secret 2',
+  const opts = {
+    keys,
+    content: { type: 'post', text: 'super secret 2' },
     recps: [keys.id, db1Keys.id],
+    encryptionFormat: 'box2',
   }
 
-  db.publish(content, (err, privateMsg) => {
+  db.create(opts, (err, privateMsg) => {
     t.error(err, 'no err')
 
     t.equal(typeof privateMsg.value.content, 'string')
@@ -102,7 +101,7 @@ test('second box2 message can be read with tribes', (t) => {
   })
 })
 
-test('we can decrypt messages created with tribes', (t) => {
+test('we can decrypt a message created with tribes', (t) => {
   let content = {
     type: 'post',
     text: 'super secret 3',
@@ -122,7 +121,7 @@ test('we can decrypt messages created with tribes', (t) => {
   })
 })
 
-test('we can decrypt messages created with tribes 2', (t) => {
+test('we can decrypt a second message created with tribes', (t) => {
   let content = {
     type: 'post',
     text: 'super secret 4',

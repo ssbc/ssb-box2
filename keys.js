@@ -3,55 +3,55 @@
 // SPDX-License-Identifier: LGPL-3.0-only
 
 const { directMessageKey } = require('ssb-private-group-keys')
-const bfe = require('ssb-bfe')
 const { keySchemes } = require('private-group-spec')
 
-module.exports = function (config) {
-  const dmCache = {}
+module.exports = function makeKeysManager(config) {
+  const ownDMKeysCache = []
+  const sharedDMKeysCache = new Map()
+  const groupKeysCache = new Map()
 
-  const buildDMKey = directMessageKey.easy(config.keys)
-
-  function sharedDMKey(author) {
-    if (!dmCache[author]) dmCache[author] = buildDMKey(author)
-
-    return dmCache[author]
-  }
-
-  const ownKeys = []
-
-  function addDMKey(key) {
-    ownKeys.push(key)
+  function addOwnDMKey(key) {
+    ownDMKeysCache.push(key)
   }
 
   function ownDMKeys() {
-    return ownKeys.map((key) => {
+    return ownDMKeysCache.map((key) => {
       return { key, scheme: keySchemes.feed_id_self }
     })
   }
 
-  const allGroupKeys = {}
+  const buildSharedDMKey = directMessageKey.easy(config.keys)
+
+  function sharedDMKey(author) {
+    if (!sharedDMKeysCache.has(author)) {
+      sharedDMKeysCache.set(author, buildSharedDMKey(author))
+    }
+    return sharedDMKeysCache.get(author)
+  }
 
   function addGroupKey(id, key) {
-    allGroupKeys[id] = key
+    groupKeysCache.set(id, key)
   }
 
   function groupKey(id) {
-    const key = allGroupKeys[id]
-    if (key) return { key, scheme: keySchemes.private_group }
-    else return undefined
+    if (groupKeysCache.has(id)) {
+      return { key: groupKeysCache.get(id), scheme: keySchemes.private_group }
+    } else {
+      return undefined
+    }
   }
 
   function groupKeys() {
-    return Object.values(allGroupKeys).map((key) => {
+    return [...groupKeysCache.values()].map((key) => {
       return { key, scheme: keySchemes.private_group }
     })
   }
 
   return {
+    addOwnDMKey,
     ownDMKeys,
-    TFKId: bfe.encode(config.keys.id),
+
     sharedDMKey,
-    addDMKey,
 
     addGroupKey,
     groupKey,
