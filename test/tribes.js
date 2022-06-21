@@ -16,33 +16,38 @@ function readyDir(dir) {
   return dir
 }
 
-const dir = readyDir('/tmp/ssb-db2-box2-tribes')
-const keys = ssbKeys.loadOrCreateSync(path.join(dir, 'secret'))
+let sbot
+let keys
+let db1Keys
+let db1Sbot
 
-const sbot = SecretStack({ appKey: caps.shs })
-  .use(require('ssb-db2'))
-  .use(require('../'))
-  .call(null, {
-    keys,
-    path: dir,
-    box2: {
-      alwaysbox2: true,
-    },
-  })
-const db = sbot.db
+test('setup', (t) => {
+  const dir = readyDir('/tmp/ssb-db2-box2-tribes')
+  keys = ssbKeys.loadOrCreateSync(path.join(dir, 'secret'))
 
-const db1Dir = readyDir('/tmp/ssb-db2-box2-tribes-db1')
-const db1Keys = ssbKeys.loadOrCreateSync(path.join(db1Dir, 'secret'))
+  sbot = SecretStack({ appKey: caps.shs })
+    .use(require('ssb-db2'))
+    .use(require('../'))
+    .call(null, {
+      keys,
+      path: dir,
+    })
 
-const db1Sbot = SecretStack({ caps })
-  .use(require('ssb-db'))
-  .use(require('ssb-backlinks'))
-  .use(require('ssb-query'))
-  .use(require('ssb-tribes'))
-  .call(null, {
-    keys: db1Keys,
-    path: db1Dir,
-  })
+  const db1Dir = readyDir('/tmp/ssb-db2-box2-tribes-db1')
+  db1Keys = ssbKeys.loadOrCreateSync(path.join(db1Dir, 'secret'))
+
+  db1Sbot = SecretStack({ caps })
+    .use(require('ssb-db'))
+    .use(require('ssb-backlinks'))
+    .use(require('ssb-query'))
+    .use(require('ssb-tribes'))
+    .call(null, {
+      keys: db1Keys,
+      path: db1Dir,
+    })
+
+    t.end()
+})
 
 test('box2 message can be read with tribes', (t) => {
   const testkey = Buffer.from(
@@ -59,11 +64,11 @@ test('box2 message can be read with tribes', (t) => {
     recps: [keys.id, db1Keys.id],
   }
 
-  db.create(opts, (err, privateMsg) => {
+  sbot.db.create(opts, (err, privateMsg) => {
     t.error(err, 'no err')
 
     t.equal(typeof privateMsg.value.content, 'string')
-    db.get(privateMsg.key, (err, msg) => {
+    sbot.db.get(privateMsg.key, (err, msg) => {
       t.equal(msg.content.text, 'super secret')
 
       db1Sbot.add(privateMsg.value, (err) => {
@@ -84,11 +89,11 @@ test('second box2 message can be read with tribes', (t) => {
     encryptionFormat: 'box2',
   }
 
-  db.create(opts, (err, privateMsg) => {
+  sbot.db.create(opts, (err, privateMsg) => {
     t.error(err, 'no err')
 
     t.equal(typeof privateMsg.value.content, 'string')
-    db.get(privateMsg.key, (err, msg) => {
+    sbot.db.get(privateMsg.key, (err, msg) => {
       t.equal(msg.content.text, 'super secret 2')
 
       db1Sbot.add(privateMsg.value, (err) => {
@@ -112,8 +117,8 @@ test('we can decrypt a message created with tribes', (t) => {
     t.error(err, 'no err')
 
     t.equal(typeof privateMsg.value.content, 'string')
-    db.add(privateMsg.value, (err) => {
-      db.get(privateMsg.key, (err, db2Msg) => {
+    sbot.db.add(privateMsg.value, (err) => {
+      sbot.db.get(privateMsg.key, (err, db2Msg) => {
         t.equal(db2Msg.content.text, 'super secret 3')
         t.end()
       })
@@ -132,8 +137,8 @@ test('we can decrypt a second message created with tribes', (t) => {
     t.error(err, 'no err')
 
     t.equal(typeof privateMsg.value.content, 'string')
-    db.add(privateMsg.value, (err) => {
-      db.get(privateMsg.key, (err, db2Msg) => {
+    sbot.db.add(privateMsg.value, (err) => {
+      sbot.db.get(privateMsg.key, (err, db2Msg) => {
         t.equal(db2Msg.content.text, 'super secret 4')
         sbot.close(() => db1Sbot.close(t.end))
       })
