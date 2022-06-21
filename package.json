@@ -31,7 +31,7 @@
     "secret-stack": "6.3.2",
     "ssb-backlinks": "^2.1.1",
     "ssb-caps": "1.1.0",
-    "ssb-buttwoo": "ssbc/ssb-buttwoo#feed-format",
+    "ssb-buttwoo": "^0.3.0",
     "ssb-db": "^20.4.0",
     "ssb-db2": "ssbc/ssb-db2#formats-split",
     "ssb-encryption-format": "^2.1.0",
