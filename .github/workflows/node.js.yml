@@ -31,7 +31,6 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: ${{ matrix.node-version }}
-          cache: 'pnpm'
       - run: pnpm install
       - name: npm test
         run: DEBUG=ssb:* npm test
