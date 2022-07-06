@@ -34,7 +34,7 @@ test('setup', (t) => {
     })
 
   const db1Dir = readyDir('/tmp/ssb-db2-box2-tribes-db1')
-  db1Keys = ssbKeys.loadOrCreateSync(path.join(db1Dir, 'secret'))
+  db1Keys = ssbKeys.loadOrCreateSync(path.join(db1Dir, 'secret2'))
 
   db1Sbot = SecretStack({ caps })
     .use(require('ssb-db'))
@@ -55,7 +55,7 @@ test('box2 message can be read with tribes', (t) => {
     'hex'
   )
 
-  sbot.box2.addOwnDMKey(testkey)
+  sbot.box2.setOwnDMKey(testkey)
 
   const opts = {
     keys,

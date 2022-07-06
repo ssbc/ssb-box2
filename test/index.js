@@ -13,7 +13,7 @@ test('passes ssb-encryption-format', (t) => {
   check(
     box2,
     () => {
-      box2.addOwnDMKey(
+      box2.setOwnDMKey(
         Buffer.from(
           '30720d8f9cbf37f6d7062826f6decac93e308060a8aaaa77e6a4747f40ee1a76',
           'hex'
@@ -32,7 +32,7 @@ test('decrypt as DM recipient from own encrypted DM', (t) => {
   const keys = ssbKeys.generate(null, 'alice', 'buttwoo-v1')
 
   box2.setup({ keys }, () => {
-    box2.addOwnDMKey(
+    box2.setOwnDMKey(
       Buffer.from(
         '30720d8f9cbf37f6d7062826f6decac93e308060a8aaaa77e6a4747f40ee1a76',
         'hex'
@@ -62,17 +62,19 @@ test('decrypt as DM recipient from own encrypted DM', (t) => {
 })
 
 test('decrypt as DM recipient from shared DM keys', (t) => {
-  const keys = ssbKeys.generate(null, 'alice', 'buttwoo-v1')
+  const keys1 = ssbKeys.generate(null, 'alice', 'buttwoo-v1')
+  const keys2 = ssbKeys.generate(null, 'bob', 'buttwoo-v1')
 
-  box2.setup({ keys }, () => {
-    box2.addOwnDMKey(
+  box2.setup({ keys: keys2 }, (err) => {
+    t.error(err, 'no error')
+
+    box2.setOwnDMKey(
       Buffer.from(
         '30720d8f9cbf37f6d7062826f6decac93e308060a8aaaa77e6a4747f40ee1a76',
         'hex'
       )
     )
 
-    const keys2 = ssbKeys.generate(null, 'bob', 'buttwoo-v1')
     const opts = {
       keys: keys2,
       content: { type: 'post', text: 'super secret' },
@@ -80,18 +82,20 @@ test('decrypt as DM recipient from shared DM keys', (t) => {
       timestamp: 12345678900,
       tag: buttwoo.tags.SSB_FEED,
       hmacKey: null,
-      recps: [keys2.id, keys.id],
+      recps: [keys2.id, keys1.id],
     }
 
     const plaintext = buttwoo.toPlaintextBuffer(opts)
     t.true(Buffer.isBuffer(plaintext), 'plaintext is a buffer')
-
     const ciphertext = box2.encrypt(plaintext, opts)
 
-    const decrypted = box2.decrypt(ciphertext, { ...opts, author: keys2.id })
-    t.deepEqual(decrypted, plaintext, 'decrypted plaintext is the same')
+    box2.setup({ keys: keys1 }, (err) => {
+      t.error(err, 'no error')
+      const decrypted = box2.decrypt(ciphertext, { ...opts, author: keys2.id })
+      t.deepEqual(decrypted, plaintext, 'decrypted plaintext is the same')
 
-    t.end()
+      t.end()
+    })
   })
 })
 
@@ -99,8 +103,9 @@ test('decrypt as group recipient', (t) => {
   const keys = ssbKeys.generate(null, 'alice', 'buttwoo-v1')
 
   box2.setup({ keys }, () => {
+    const groupId = '%Lihvp+fMdt5CihjbOY6eZc0qCe0eKsrN2wfgXV2E3PM=.cloaked'
     box2.addGroupKey(
-      'foobar',
+      groupId,
       Buffer.from(
         '30720d8f9cbf37f6d7062826f6decac93e308060a8aaaa77e6a4747f40ee1a76',
         'hex'
@@ -114,7 +119,7 @@ test('decrypt as group recipient', (t) => {
       timestamp: 12345678900,
       tag: buttwoo.tags.SSB_FEED,
       hmacKey: null,
-      recps: ['foobar', ssbKeys.generate(null, '2').id],
+      recps: [groupId, ssbKeys.generate(null, '2').id],
     }
 
     const plaintext = buttwoo.toPlaintextBuffer(opts)
@@ -129,7 +134,7 @@ test('decrypt as group recipient', (t) => {
   })
 })
 
-test('cannot decrypt without ownDMKey or group keys', (t) => {
+test('cannot decrypt own DM after we changed our own DM keys', (t) => {
   const keys = ssbKeys.generate(null, 'alice', 'buttwoo-v1')
 
   box2.setup({ keys }, () => {
@@ -147,6 +152,13 @@ test('cannot decrypt without ownDMKey or group keys', (t) => {
     t.true(Buffer.isBuffer(plaintext), 'plaintext is a buffer')
 
     const ciphertext = box2.encrypt(plaintext, opts)
+
+    box2.setOwnDMKey(
+      Buffer.from(
+        '30720d8f9cbf37f6d7062826f6decac93e308060a8aaaa77e6a4747f40ee1a76',
+        'hex'
+      )
+    )
 
     const decrypted = box2.decrypt(ciphertext, { ...opts, author: keys.id })
     t.equal(decrypted, null, 'decrypted is "null"')
@@ -227,15 +239,17 @@ test('cannot encrypt to more than 1 group recipients', (t) => {
   const keys = ssbKeys.generate(null, 'alice', 'buttwoo-v1')
 
   box2.setup({ keys }, () => {
+    const groupId1 = '%Aihvp+fMdt5CihjbOY6eZc0qCe0eKsrN2wfgXV2E3PM=.cloaked'
+    const groupId2 = '%Bihvp+fMdt5CihjbOY6eZc0qCe0eKsrN2wfgXV2E3PM=.cloaked'
     box2.addGroupKey(
-      'foo',
+      groupId1,
       Buffer.from(
         '30720d8f9cbf37f6d7062826f6decac93e308060a8aaaa77e6a4747f40ee1a76',
         'hex'
       )
     )
     box2.addGroupKey(
-      'bar',
+      groupId2,
       Buffer.from(
         'ff720d8f9cbf37f6d7062826f6decac93e308060a8aaaa77e6a4747f40ee1a76',
         'hex'
@@ -249,7 +263,7 @@ test('cannot encrypt to more than 1 group recipients', (t) => {
       timestamp: 12345678900,
       tag: buttwoo.tags.SSB_FEED,
       hmacKey: null,
-      recps: ['foo', 'bar'],
+      recps: [groupId1, groupId2],
     }
 
     const plaintext = buttwoo.toPlaintextBuffer(opts)

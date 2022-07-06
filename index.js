@@ -10,7 +10,8 @@ exports.init = function (ssb, config) {
   if (ssb.db) ssb.db.installEncryptionFormat(encryptionFormat)
 
   return {
-    addOwnDMKey: encryptionFormat.addOwnDMKey,
+    setOwnDMKey: encryptionFormat.setOwnDMKey,
     addGroupKey: encryptionFormat.addGroupKey,
+    addKeypair: encryptionFormat.addKeypair,
   }
 }
