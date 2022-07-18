@@ -7,7 +7,7 @@ const Ref = require('ssb-ref')
 const Uri = require('ssb-uri2')
 const path = require('path')
 const os = require('os')
-const { box, unboxKey, unboxBody } = require('envelope-js')
+const { box, unbox } = require('envelope-js')
 const { SecretKey } = require('ssb-private-group-keys')
 const Keyring = require('ssb-keyring')
 
@@ -109,20 +109,11 @@ function decrypt(ciphertextBuf, opts) {
 
   const decryptionKeys = _keyring.decryptionKeys(authorId)
 
-  const readKeyFromGroup = unboxKey(
-    ciphertextBuf,
-    authorBFE,
-    previousBFE,
-    decryptionKeys,
-    { maxAttempts: 16 }
-  )
   // FIXME: maxAttempts should be PER KEY, because groupKeys do 1 attempt,
   // DM keys do 16 attempts. This requires changing envelope-js.
-
-  if (readKeyFromGroup)
-    return unboxBody(ciphertextBuf, authorBFE, previousBFE, readKeyFromGroup)
-
-  return null
+  return unbox(ciphertextBuf, authorBFE, previousBFE, decryptionKeys, {
+    maxAttempts: 16,
+  })
 }
 
 module.exports = {
