@@ -35,7 +35,7 @@ function _isGroup(recp) {
 function _isFeed(recp) {
   return (
     Ref.isFeed(recp) ||
-    Uri.isFeedSSBURI(recp) ||
+    Uri.isClassicFeedSSBURI(recp) ||
     Uri.isBendyButtV1FeedSSBURI(recp) ||
     Uri.isButtwooV1FeedSSBURI(recp)
   )

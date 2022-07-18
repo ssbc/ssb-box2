@@ -19,7 +19,7 @@
     "ssb-keyring": "https://gitlab.com/ahau/lib/ssb-keyring/-/archive/staltz-metakeyring/ssb-keyring-staltz-metakeyring.tar.gz",
     "ssb-private-group-keys": "^0.4.1",
     "ssb-ref": "^2.16.0",
-    "ssb-uri2": "^1.9.0"
+    "ssb-uri2": "^2.0.0"
   },
   "devDependencies": {
     "c8": "^7.11.0",
