@@ -4,14 +4,28 @@ SPDX-FileCopyrightText: 2021 Anders Rune Jensen
 SPDX-License-Identifier: CC0-1.0
 -->
 
-# SSB-DB2-Box2
+# ssb-box2
 
-A module for working with box2 in [SSB DB2]. Messages created using
-this module is compatible with [ssb-tribes].
+A module for encrypting and decrypting messages with box2 in [SSB DB2]. Messages
+created using this module are compatible with [ssb-tribes].
 
-## Usage
+You can use this module as an ssb-db2 plugin, or you can use it as a standalone
+tool to encrypt and decrypt messages.
 
-Encrypt a message to self using box2.
+## Installation
+
+- Requires **Node.js 12** or higher
+
+```bash
+npm install ssb-box2
+```
+
+## Usage in ssb-db2
+
+- Requires `secret-stack@^6.2.0`
+- Requires `ssb-db2@>=5.0.0`
+
+The example below shows how to encrypt a message to yourself using box2.
 
 ```js
 const SecretStack = require('secret-stack')
@@ -22,14 +36,8 @@ const keys = ssbKeys.loadOrCreateSync(path.join(dir, 'secret'))
 
 const sbot = SecretStack({ caps })
   .use(require('ssb-db2'))
-  .use(require('ssb-db2-box2'))
-  .call(null, {
-     path: './',
-     keys,
-     box2: {
-       alwaysbox2: true
-     }
-  })
+  .use(require('ssb-box2')) // <-- ADD THIS AS A PLUGIN
+  .call(null, { path: './', keys })
 
 const testkey = Buffer.from(
   '30720d8f9cbf37f6d7062826f6decac93e308060a8aaaa77e6a4747f40ee1a76',
@@ -37,68 +45,58 @@ const testkey = Buffer.from(
 )
 
 sbot.box2.addOwnDMKey(testkey)
-sbot.box2.setReady()
 
-let content = { type: 'post', text: 'super secret', recps: [keys.id] }
-
-sbot.db.publish(content, (err, privateMsg) => {
-  // privateMsg is now encrypted using box2
-})
+sbot.db.create(
+  {
+    content: { type: 'post', text: 'super secret', recps: [keys.id] }
+    encryptionFormat: 'box2'
+  },
+  (err, privateMsg) => {
+    // privateMsg is now encrypted using box2
+  }
+)
 ```
 
-## Configuration
+### Methods
 
-SSB-DB2-BOX2 supports ssb-config parameters to configure things:
+Adding this module as a secret-stack plugin means that you can use these methods
+on the `sbot.box2` namespace:
+
+- `addOwnDMKey(key)`: Adds a `key` (a buffer) to the list of keys that can be
+  used to encrypt messages to yourself. By specifying the direct message (DM)
+  for yourself, you are free to supply that from any source. This could be a key
+  stored in [ssb-keyring], a key derived from the seed in meta feeds or simply a
+  temporary key. For direct messaging other feeds, a key is automatically
+  derived.
+- `addGroupKey(groupId, groupKey)`: `groupId` must be a string and `groupKey`
+  must be a buffer. The key can then be used as a "recp" to encrypt messages to
+  the group. Note that the keys are not persisted in this module.
+
+## Usage as a standalone
+
+This module conforms with [ssb-encryption-format](https://github.com/ssbc/ssb-encryption-format)
+so with ssb-box2 you can use all the methods specified by ssb-encryption-format.
 
 ```js
-const config = {
-  box2: {
-    /*
-      This variable is only for DMs. Group messages are always using box2.
-      For DMs, the problem is figuring out if the other side supports
-      box2 or not. We expect to be able to use metafeeds to determine this
-      in the future. For now you can use this variable to use box2 for all
-      DMs, otherwise box1 will be used for all.
-    */
-    alwaysbox2: true
-  }
-}
+const ssbKeys = require('ssb-keys')
+const boxFormat = require('ssb-box2/format')
+
+const keys = ssbKeys.generate('ed25519', 'alice')
+boxFormat.setup({ keys }, () => {
+  boxFormat.addOwnDMKey(Buffer.alloc(32, 'abc'))
+  const opts = { recps: [keys.id], keys, previous: null, author: keys.id }
+
+  const plaintext = Buffer.from('hello')
+  console.log(plaintext)
+  // <Buffer 68 65 6c 6c 6f>
+
+  const ciphertext = boxFormat.encrypt(plaintext, opts)
+
+  const decrypted = boxFormat.decrypt(ciphertext, opts)
+  console.log(decrypted)
+  // <Buffer 68 65 6c 6c 6f>
+})
 ```
-
-## Methods
-
-### addOwnDMKey(key)
-
-`key` must be a buffer. By specifying the direct message (DM) for
-yourself, you are free to supply that from any source. This could be a
-key stored in [ssb-keyring], a key derived from the seed in meta feeds
-or simply a temporary key. For direct messaging other feeds a key is
-automatically derived.
-
-### registerIsGroup(filter)
-
-`filter` takes a recp and must return a boolean indicating if recp is
-a group id or not.
-
-### addGroupKey(groupId, groupKey)
-
-`groupId` must be a string and `groupKey` must be a buffer. The key
-can then be used to send messages to the group. Note that keys are not
-persisted in this module.
-
-### getGroupKey(groupId)
-
-Returns the `groupKey` as a buffer or undefined if group key is not
-found.
-
-### setReady()
-
-On startup, once all keys have been added be sure to call `setReady`
-to signal to DB2 that it is now safe to process data.
-
-### isReady(cb)
-
-`cb` will resolve once once all initial keys have been added.
 
 [SSB DB2]: https://github.com/ssb-ngi-pointer/ssb-db2/
 [ssb-tribes]: https://github.com/ssbc/ssb-tribes/
