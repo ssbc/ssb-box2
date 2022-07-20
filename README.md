@@ -44,7 +44,7 @@ const testkey = Buffer.from(
   'hex'
 )
 
-sbot.box2.addOwnDMKey(testkey)
+sbot.box2.setOwnDMKey(testkey)
 
 sbot.db.create(
   {
@@ -62,12 +62,11 @@ sbot.db.create(
 Adding this module as a secret-stack plugin means that you can use these methods
 on the `sbot.box2` namespace:
 
-- `addOwnDMKey(key)`: Adds a `key` (a buffer) to the list of keys that can be
+- `setOwnDMKey(key)`: Adds a `key` (a buffer) to the list of keys that can be
   used to encrypt messages to yourself. By specifying the direct message (DM)
-  for yourself, you are free to supply that from any source. This could be a key
-  stored in [ssb-keyring], a key derived from the seed in meta feeds or simply a
-  temporary key. For direct messaging other feeds, a key is automatically
-  derived.
+  for yourself, you are free to supply that from any source. The key you provide
+  *will* be persisted locally. For direct messaging other feeds, a key is
+  automatically derived.
 - `addGroupKey(groupId, groupKey)`: `groupId` must be a string and `groupKey`
   must be a buffer. The key can then be used as a "recp" to encrypt messages to
   the group. Note that the keys are not persisted in this module.
@@ -83,7 +82,7 @@ const boxFormat = require('ssb-box2/format')
 
 const keys = ssbKeys.generate('ed25519', 'alice')
 boxFormat.setup({ keys }, () => {
-  boxFormat.addOwnDMKey(Buffer.alloc(32, 'abc'))
+  boxFormat.setOwnDMKey(Buffer.alloc(32, 'abc'))
   const opts = { recps: [keys.id], keys, previous: null, author: keys.id }
 
   const plaintext = Buffer.from('hello')
