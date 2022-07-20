@@ -130,10 +130,10 @@ function decrypt(ciphertextBuf, opts) {
   const unboxWith = unbox.bind(null, ciphertextBuf, authorBFE, previousBFE)
 
   let plaintextBuf = null
+  if ((plaintextBuf = unboxWith(group, attempt1))) return plaintextBuf
   if ((plaintextBuf = unboxWith(self, attempt16))) return plaintextBuf
   if ((plaintextBuf = unboxWith(dm, attempt16))) return plaintextBuf
   if ((plaintextBuf = unboxWith(poBox, attempt16))) return plaintextBuf
-  if ((plaintextBuf = unboxWith(group, attempt1))) return plaintextBuf
 
   return null
 }
