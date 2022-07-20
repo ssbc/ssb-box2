@@ -16,7 +16,7 @@
     "envelope-js": "^1.3.0",
     "private-group-spec": "^1.1.2",
     "ssb-bfe": "^3.3.0",
-    "ssb-keyring": "https://gitlab.com/ahau/lib/ssb-keyring/-/archive/staltz-metakeyring/ssb-keyring-staltz-metakeyring.tar.gz",
+    "ssb-keyring": "^2.0.0",
     "ssb-private-group-keys": "^0.4.1",
     "ssb-ref": "^2.16.0",
     "ssb-uri2": "^2.0.0"
@@ -34,7 +34,7 @@
     "ssb-buttwoo": "^0.3.0",
     "ssb-caps": "1.1.0",
     "ssb-db": "^20.4.0",
-    "ssb-db2": "ssbc/ssb-db2#formats-split",
+    "ssb-db2": "ssbc/ssb-db2#encryption-format-setup",
     "ssb-encryption-format": "^2.1.0",
     "ssb-keys": "^8.4.0",
     "ssb-query": "^2.4.5",

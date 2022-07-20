@@ -10,10 +10,12 @@ const os = require('os')
 const { box, unbox } = require('envelope-js')
 const { SecretKey } = require('ssb-private-group-keys')
 const Keyring = require('ssb-keyring')
+const { ReadyGate } = require('./utils')
 
 const name = 'box2'
 
 let _keyring = null
+const _keyringReady = new ReadyGate()
 
 function reportError(err) {
   if (err) console.error(err)
@@ -24,8 +26,13 @@ function setup(config, cb) {
     config.path || path.join(os.tmpdir(), '.ssb-keyring-' + Date.now()),
     'keyring'
   )
-  _keyring = Keyring(keyringPath, cb)
-  _keyring.keypair.add(config.keys.id, config.keys, reportError)
+  Keyring(keyringPath, (err, api) => {
+    if (err) return cb(err)
+    _keyring = api
+    _keyring.dm.addFromSSBKeys(config.keys)
+    _keyringReady.setReady()
+    cb()
+  })
 }
 
 function _isGroup(recp) {
@@ -42,15 +49,21 @@ function _isFeed(recp) {
 }
 
 function setOwnDMKey(key) {
-  _keyring.own.set({ key }, reportError)
+  _keyringReady.onReady(() => {
+    _keyring.self.set({ key }, reportError)
+  })
 }
 
 function addGroupKey(id, key) {
-  _keyring.group.add(id, { key }, reportError)
+  _keyringReady.onReady(() => {
+    _keyring.group.add(id, { key }, reportError)
+  })
 }
 
-function addKeypair(id, keypair) {
-  _keyring.keypair.add(id, keypair, reportError)
+function addKeypair(keypair) {
+  _keyringReady.onReady(() => {
+    _keyring.dm.addFromDMKeys(keypair, reportError)
+  })
 }
 
 function encrypt(plaintextBuf, opts) {
@@ -85,7 +98,9 @@ function encrypt(plaintextBuf, opts) {
     throw new Error(`private-group spec only supports one group recipient, but you've tried to use ${groupRecpsCount}`)
   }
 
-  const encryptionKeys = _keyring.encryptionKeys(authorId, validRecps)
+  const encryptionKeys = _keyring
+    .encryptionKeys(authorId, validRecps)
+    .filter((x) => x !== null)
 
   const msgSymmKey = new SecretKey().toBuffer()
   const authorIdBFE = BFE.encode(authorId)
@@ -102,18 +117,25 @@ function encrypt(plaintextBuf, opts) {
   return ciphertextBuf
 }
 
+const attempt1 = { maxAttempts: 1 }
+const attempt16 = { maxAttempts: 16 }
+
 function decrypt(ciphertextBuf, opts) {
   const authorId = opts.author
   const authorBFE = BFE.encode(authorId)
   const previousBFE = BFE.encode(opts.previous)
 
-  const decryptionKeys = _keyring.decryptionKeys(authorId)
+  const { self, dm, group, poBox } = _keyring.decryptionKeys(authorId)
 
-  // FIXME: maxAttempts should be PER KEY, because groupKeys do 1 attempt,
-  // DM keys do 16 attempts. This requires changing envelope-js.
-  return unbox(ciphertextBuf, authorBFE, previousBFE, decryptionKeys, {
-    maxAttempts: 16,
-  })
+  const unboxWith = unbox.bind(null, ciphertextBuf, authorBFE, previousBFE)
+
+  let plaintextBuf = null
+  if ((plaintextBuf = unboxWith(self, attempt16))) return plaintextBuf
+  if ((plaintextBuf = unboxWith(dm, attempt16))) return plaintextBuf
+  if ((plaintextBuf = unboxWith(poBox, attempt16))) return plaintextBuf
+  if ((plaintextBuf = unboxWith(group, attempt1))) return plaintextBuf
+
+  return null
 }
 
 module.exports = {
