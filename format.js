@@ -36,8 +36,9 @@ function setup(config, cb) {
 }
 
 function teardown(cb) {
-  if (_keyring) _keyring.close(cb)
-  else cb()
+  _keyringReady.onReady(() => {
+    _keyring.close(cb)
+  })
 }
 
 function _isGroup(recp) {
