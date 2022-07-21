@@ -78,20 +78,22 @@ so with ssb-box2 you can use all the methods specified by ssb-encryption-format.
 
 ```js
 const ssbKeys = require('ssb-keys')
-const boxFormat = require('ssb-box2/format')
+const Box2Format = require('ssb-box2/format')
 
 const keys = ssbKeys.generate('ed25519', 'alice')
-boxFormat.setup({ keys }, () => {
-  boxFormat.setOwnDMKey(Buffer.alloc(32, 'abc'))
+const box2Format = Box2Format()
+
+box2Format.setup({ keys }, () => {
+  box2Format.setOwnDMKey(Buffer.alloc(32, 'abc'))
   const opts = { recps: [keys.id], keys, previous: null, author: keys.id }
 
   const plaintext = Buffer.from('hello')
   console.log(plaintext)
   // <Buffer 68 65 6c 6c 6f>
 
-  const ciphertext = boxFormat.encrypt(plaintext, opts)
+  const ciphertext = box2Format.encrypt(plaintext, opts)
 
-  const decrypted = boxFormat.decrypt(ciphertext, opts)
+  const decrypted = box2Format.decrypt(ciphertext, opts)
   console.log(decrypted)
   // <Buffer 68 65 6c 6c 6f>
 })

@@ -2,11 +2,12 @@
 //
 // SPDX-License-Identifier: LGPL-3.0-only
 
-const encryptionFormat = require('./format')
+const makeEncryptionFormat = require('./format')
 
 exports.name = 'box2'
 
 exports.init = function (ssb, config) {
+  const encryptionFormat = makeEncryptionFormat()
   if (ssb.db) ssb.db.installEncryptionFormat(encryptionFormat)
 
   return {
