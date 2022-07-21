@@ -35,6 +35,11 @@ function setup(config, cb) {
   })
 }
 
+function teardown(cb) {
+  if (_keyring) _keyring.close(cb)
+  else cb()
+}
+
 function _isGroup(recp) {
   return _keyring.group.has(recp)
 }
@@ -142,6 +147,7 @@ module.exports = {
   // ssb-encryption-format API:
   name,
   setup,
+  teardown,
   encrypt,
   decrypt,
   // ssb-box2 specific APIs:
