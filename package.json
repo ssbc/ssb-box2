@@ -35,7 +35,7 @@
     "ssb-caps": "1.1.0",
     "ssb-db": "^20.4.0",
     "ssb-db2": "ssbc/ssb-db2#formats-split",
-    "ssb-encryption-format": "^2.1.0",
+    "ssb-encryption-format": "^2.2.0",
     "ssb-keys": "^8.4.0",
     "ssb-query": "^2.4.5",
     "ssb-tribes": "^2.7.4",
