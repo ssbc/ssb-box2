@@ -70,7 +70,7 @@ function makeEncryptionFormat() {
 
   function addKeypair(keypair) {
     _keyringReady.onReady(() => {
-      _keyring.dm.addFromDMKeys(keypair, reportError)
+      _keyring.dm.addFromSSBKeys(keypair)
     })
   }
 
