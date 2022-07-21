@@ -7,9 +7,10 @@ const { check } = require('ssb-encryption-format')
 const ssbKeys = require('ssb-keys')
 const buttwoo = require('ssb-buttwoo/format')
 
-const box2 = require('../format')
+const Box2 = require('../format')
 
 test('passes ssb-encryption-format', (t) => {
+  const box2 = Box2()
   check(
     box2,
     () => {
@@ -29,6 +30,7 @@ test('passes ssb-encryption-format', (t) => {
 })
 
 test('decrypt as DM recipient from own encrypted DM', (t) => {
+  const box2 = Box2()
   const keys = ssbKeys.generate(null, 'alice', 'buttwoo-v1')
 
   box2.setup({ keys }, () => {
@@ -62,6 +64,7 @@ test('decrypt as DM recipient from own encrypted DM', (t) => {
 })
 
 test('decrypt as DM recipient from shared DM keys', (t) => {
+  const box2 = Box2()
   const keys1 = ssbKeys.generate(null, 'alice', 'buttwoo-v1')
   const keys2 = ssbKeys.generate(null, 'bob', 'buttwoo-v1')
 
@@ -100,6 +103,7 @@ test('decrypt as DM recipient from shared DM keys', (t) => {
 })
 
 test('decrypt as group recipient', (t) => {
+  const box2 = Box2()
   const keys = ssbKeys.generate(null, 'alice', 'buttwoo-v1')
 
   box2.setup({ keys }, () => {
@@ -135,6 +139,7 @@ test('decrypt as group recipient', (t) => {
 })
 
 test('cannot decrypt own DM after we changed our own DM keys', (t) => {
+  const box2 = Box2()
   const keys = ssbKeys.generate(null, 'alice', 'buttwoo-v1')
 
   box2.setup({ keys }, () => {
@@ -168,6 +173,7 @@ test('cannot decrypt own DM after we changed our own DM keys', (t) => {
 })
 
 test('cannot encrypt to zero valid recipients', (t) => {
+  const box2 = Box2()
   const keys = ssbKeys.generate(null, 'alice', 'buttwoo-v1')
 
   box2.setup({ keys }, () => {
@@ -193,6 +199,7 @@ test('cannot encrypt to zero valid recipients', (t) => {
 })
 
 test('cannot encrypt to more than 16 recipients', (t) => {
+  const box2 = Box2()
   const keys = ssbKeys.generate(null, 'alice', 'buttwoo-v1')
 
   box2.setup({ keys }, () => {
@@ -236,6 +243,7 @@ test('cannot encrypt to more than 16 recipients', (t) => {
 })
 
 test('cannot encrypt to more than 1 group recipients', (t) => {
+  const box2 = Box2()
   const keys = ssbKeys.generate(null, 'alice', 'buttwoo-v1')
 
   box2.setup({ keys }, () => {
