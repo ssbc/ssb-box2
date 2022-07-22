@@ -106,6 +106,48 @@ test('second box2 message can be read with tribes', (t) => {
   })
 })
 
+test('box2 group message can be read with tribes', (t) => {
+  const testkey = Buffer.from(
+    '50720d8f9cbf37f6d7062826f6decac93e308060a8aaaa77e6a4747f40ee1a76',
+    'hex'
+  )
+
+  const groupId = '%Lihvp+fMdt5CihjbOY6eZc0qCe0eKsrN2wfgXV2E3PM=.cloaked'
+  sbot.box2.addGroupKey(groupId, testkey)
+
+  const registerOpts = {
+    key: testkey.toString('base64'),
+    root: '%MPB9vxHO0pvi2ve2wh6Do05ZrV7P6ZjUQ+IEYnzLfTs=.sha256'
+  }
+
+  db1Sbot.tribes.register(groupId, registerOpts, (err) => {
+    db1Sbot.tribes.registerAuthors(groupId, [keys.id, db1Keys.id], (err) => {
+      const opts = {
+        keys,
+        content: { type: 'post', text: 'super secret' },
+        encryptionFormat: 'box2',
+        recps: [groupId],
+      }
+
+      sbot.db.create(opts, (err, privateMsg) => {
+        t.error(err, 'no err')
+
+        t.equal(typeof privateMsg.value.content, 'string')
+        sbot.db.get(privateMsg.key, (err, msg) => {
+          t.equal(msg.content.text, 'super secret')
+
+          db1Sbot.add(privateMsg.value, (err) => {
+            db1Sbot.get({ id: privateMsg.key, private: true }, (err, db1Msg) => {
+              t.equal(db1Msg.content.text, 'super secret')
+              t.end()
+            })
+          })
+        })
+      })
+    })
+  })
+})
+
 test('we can decrypt a message created with tribes', (t) => {
   let content = {
     type: 'post',
@@ -140,6 +182,29 @@ test('we can decrypt a second message created with tribes', (t) => {
     sbot.db.add(privateMsg.value, (err) => {
       sbot.db.get(privateMsg.key, (err, db2Msg) => {
         t.equal(db2Msg.content.text, 'super secret 4')
+        t.end()
+      })
+    })
+  })
+})
+
+test('we can decrypt a group message created with tribes', (t) => {
+  // group already registered
+  const groupId = '%Lihvp+fMdt5CihjbOY6eZc0qCe0eKsrN2wfgXV2E3PM=.cloaked'
+
+  let content = {
+    type: 'post',
+    text: 'super secret 3',
+    recps: [groupId],
+  }
+
+  db1Sbot.publish(content, (err, privateMsg) => {
+    t.error(err, 'no err')
+
+    t.equal(typeof privateMsg.value.content, 'string')
+    sbot.db.add(privateMsg.value, (err) => {
+      sbot.db.get(privateMsg.key, (err, db2Msg) => {
+        t.equal(db2Msg.content.text, 'super secret 3')
         sbot.close(() => db1Sbot.close(t.end))
       })
     })
