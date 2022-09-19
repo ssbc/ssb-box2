@@ -209,7 +209,6 @@ test('we can decrypt a group message created with tribes', (t) => {
     sbot.db.add(privateMsg.value, (err) => {
       sbot.db.get(privateMsg.key, (err, db2Msg) => {
         t.equal(db2Msg.content.text, 'super secret 3')
-        //sbot.close(() => db1Sbot.close(t.end))
         t.end()
       })
     })
