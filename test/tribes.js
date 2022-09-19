@@ -26,7 +26,11 @@ test('setup', (t) => {
   keys = ssbKeys.loadOrCreateSync(path.join(dir, 'secret'))
 
   sbot = SecretStack({ appKey: caps.shs })
-    .use(require('ssb-db2'))
+    .use(require('ssb-db2/core'))
+    .use(require('ssb-classic'))
+    .use(require('ssb-box'))
+    .use(require('ssb-db2/compat/publish'))
+    .use(require('ssb-db2/compat/post'))
     .use(require('../'))
     .call(null, {
       keys,
@@ -214,16 +218,13 @@ test('we can decrypt a group message created with tribes', (t) => {
 
 test('can list group keys', (t) => {
   sbot.box2.listGroupKeys().then(keys=> {
-    console.log('keys', keys)
     t.equal(keys.length, 1)
 
-    //TODO: add more keys and measure length again
-
-    //TODO: add non-group keys and make sure length doesn't increase
+    t.end()
   })
     .catch(t.error)
 })
 
 test('teardown', (t) => {
-        sbot.close(() => db1Sbot.close(t.end))
+  sbot.close(() => db1Sbot.close(t.end))
 })

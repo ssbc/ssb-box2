@@ -7,6 +7,7 @@
     "type": "git",
     "url": "git@github.com:ssbc/ssb-box2.git"
   },
+  "main": "index.js",
   "files": [
     "*.js",
     "package.json.license",
@@ -33,6 +34,7 @@
     "ssb-backlinks": "^2.1.1",
     "ssb-buttwoo": "^0.3.0",
     "ssb-caps": "1.1.0",
+    "ssb-classic": "^1.0.3",
     "ssb-db": "^20.4.0",
     "ssb-db2": "^6.2.0",
     "ssb-encryption-format": "^2.2.0",

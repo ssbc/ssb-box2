@@ -73,7 +73,7 @@ function makeEncryptionFormat() {
     if (cb === undefined) return promisify(listGroupKeys)()
 
     _keyringReady.onReady(() => {
-      cb(_keyring.group.list())
+      cb(null, _keyring.group.list())
     })
   }
 
