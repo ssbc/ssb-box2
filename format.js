@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: LGPL-3.0-only
 
+const { promisify } = require('util')
 const BFE = require('ssb-bfe')
 const Ref = require('ssb-ref')
 const Uri = require('ssb-uri2')
@@ -65,6 +66,14 @@ function makeEncryptionFormat() {
   function addGroupKey(id, key) {
     _keyringReady.onReady(() => {
       _keyring.group.add(id, { key }, reportError)
+    })
+  }
+
+  function listGroupKeys(cb) {
+    if (cb === undefined) return promisify(listGroupKeys)()
+
+    _keyringReady.onReady(() => {
+      cb(null, _keyring.group.list())
     })
   }
 
@@ -153,6 +162,7 @@ function makeEncryptionFormat() {
     // ssb-box2 specific APIs:
     setOwnDMKey,
     addGroupKey,
+    listGroupKeys,
     addKeypair,
   }
 }
