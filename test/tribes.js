@@ -205,7 +205,8 @@ test('we can decrypt a group message created with tribes', (t) => {
     sbot.db.add(privateMsg.value, (err) => {
       sbot.db.get(privateMsg.key, (err, db2Msg) => {
         t.equal(db2Msg.content.text, 'super secret 3')
-        sbot.close(() => db1Sbot.close(t.end))
+        //sbot.close(() => db1Sbot.close(t.end))
+        t.end()
       })
     })
   })
@@ -221,4 +222,8 @@ test('can list group keys', (t) => {
     //TODO: add non-group keys and make sure length doesn't increase
   })
     .catch(t.error)
+})
+
+test('teardown', (t) => {
+        sbot.close(() => db1Sbot.close(t.end))
 })
