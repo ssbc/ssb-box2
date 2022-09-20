@@ -17,6 +17,8 @@ function readyDir(dir) {
   return dir
 }
 
+const groupId = '%Lihvp+fMdt5CihjbOY6eZc0qCe0eKsrN2wfgXV2E3PM=.cloaked'
+
 let sbot
 let keys
 let db1Keys
@@ -117,7 +119,6 @@ test('box2 group message can be read with tribes', (t) => {
     'hex'
   )
 
-  const groupId = '%Lihvp+fMdt5CihjbOY6eZc0qCe0eKsrN2wfgXV2E3PM=.cloaked'
   sbot.box2.addGroupKey(groupId, testkey)
 
   const registerOpts = {
@@ -195,7 +196,6 @@ test('we can decrypt a second message created with tribes', (t) => {
 
 test('we can decrypt a group message created with tribes', (t) => {
   // group already registered
-  const groupId = '%Lihvp+fMdt5CihjbOY6eZc0qCe0eKsrN2wfgXV2E3PM=.cloaked'
 
   let content = {
     type: 'post',
@@ -225,6 +225,15 @@ test('can list group ids', (t) => {
     t.end()
   })
     .catch(t.error)
+})
+
+test('can get group info', async t => {
+  const info = await sbot.box2.getGroupKeyInfo(groupId)
+
+  t.true(Buffer.isBuffer(info.key), 'key is a buffer')
+  t.equal(info.scheme, 'envelope-large-symmetric-group', 'scheme is correct')
+
+  t.end()
 })
 
 test('teardown', (t) => {

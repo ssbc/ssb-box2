@@ -77,6 +77,16 @@ function makeEncryptionFormat() {
     })
   }
 
+  function getGroupKeyInfo(groupId, cb) {
+    if (cb === undefined) return promisify(getGroupKeyInfo)(groupId)
+
+    if (!groupId) cb(new Error('Group id required'))
+
+    _keyringReady.onReady(() => {
+      cb(null, _keyring.group.get(groupId))
+    })
+  }
+
   function addKeypair(keypair) {
     _keyringReady.onReady(() => {
       _keyring.dm.addFromSSBKeys(keypair)
@@ -163,6 +173,7 @@ function makeEncryptionFormat() {
     setOwnDMKey,
     addGroupKey,
     listGroupIds,
+    getGroupKeyInfo,
     addKeypair,
   }
 }
