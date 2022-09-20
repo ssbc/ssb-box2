@@ -80,7 +80,7 @@ function makeEncryptionFormat() {
   function getGroupKeyInfo(groupId, cb) {
     if (cb === undefined) return promisify(getGroupKeyInfo)(groupId)
 
-    if (!groupId) cb('Group id required')
+    if (!groupId) cb(new Error('Group id required'))
 
     _keyringReady.onReady(() => {
       cb(null, _keyring.group.get(groupId))
