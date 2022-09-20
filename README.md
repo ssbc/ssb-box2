@@ -70,7 +70,7 @@ on the `sbot.box2` namespace:
 - `addGroupKey(groupId, groupKey)`: `groupId` must be a string and `groupKey`
   must be a buffer. The key can then be used as a "recp" to encrypt messages to
   the group. Note that the keys are not persisted in this module.
-- `listGroupKeys(cb) => [groupKeys]`: Lists all groupKeys that you're able to decrypt. Returns a promise if cb isn't provided.
+- `listGroupIds(cb) => [groupIds]`: Lists all groupIds whose messages you're able to decrypt. Returns a promise if cb isn't provided.
 
 ## Usage as a standalone
 

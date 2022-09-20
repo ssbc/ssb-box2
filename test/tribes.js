@@ -9,6 +9,7 @@ const rimraf = require('rimraf')
 const mkdirp = require('mkdirp')
 const SecretStack = require('secret-stack')
 const caps = require('ssb-caps')
+const ref = require('ssb-ref')
 
 function readyDir(dir) {
   rimraf.sync(dir)
@@ -215,9 +216,11 @@ test('we can decrypt a group message created with tribes', (t) => {
   })
 })
 
-test('can list group keys', (t) => {
-  sbot.box2.listGroupKeys().then(keys=> {
-    t.equal(keys.length, 1)
+test('can list group ids', (t) => {
+  sbot.box2.listGroupIds().then(ids=> {
+    t.equal(ids.length, 1, 'lists the one group we are in')
+
+    t.true(ref.isCloakedMsg(ids[0]), 'lists a group id and not something else')
 
     t.end()
   })
