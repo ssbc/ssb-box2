@@ -215,9 +215,9 @@ test('we can decrypt a group message created with tribes', (t) => {
   })
 })
 
-test('can list group keys', (t) => {
-  sbot.box2.listGroupKeys().then(keys=> {
-    t.equal(keys.length, 1)
+test('can list group ids', (t) => {
+  sbot.box2.listGroupIds().then(ids=> {
+    t.equal(ids.length, 1)
 
     t.end()
   })

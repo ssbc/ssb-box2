@@ -69,8 +69,8 @@ function makeEncryptionFormat() {
     })
   }
 
-  function listGroupKeys(cb) {
-    if (cb === undefined) return promisify(listGroupKeys)()
+  function listGroupIds(cb) {
+    if (cb === undefined) return promisify(listGroupIds)()
 
     _keyringReady.onReady(() => {
       cb(null, _keyring.group.list())
@@ -162,7 +162,7 @@ function makeEncryptionFormat() {
     // ssb-box2 specific APIs:
     setOwnDMKey,
     addGroupKey,
-    listGroupKeys,
+    listGroupIds,
     addKeypair,
   }
 }
