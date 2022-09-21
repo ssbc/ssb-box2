@@ -63,9 +63,10 @@ function makeEncryptionFormat() {
     })
   }
 
-  function addGroupKey(id, key) {
+  //TODO: update docs
+  function addGroupInfo(id, info) {
     _keyringReady.onReady(() => {
-      _keyring.group.add(id, { key }, reportError)
+      _keyring.group.add(id, info, reportError)
     })
   }
 
@@ -161,7 +162,7 @@ function makeEncryptionFormat() {
     decrypt,
     // ssb-box2 specific APIs:
     setOwnDMKey,
-    addGroupKey,
+    addGroupInfo,
     listGroupIds,
     addKeypair,
   }
