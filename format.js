@@ -105,7 +105,7 @@ function makeEncryptionFormat() {
 
     const validGroupkeyRecps = recps.filter(
       (recp) =>
-        Buffer.isBuffer(recp.key) && recp.scheme === keySchemes.private_group
+        recp && Buffer.isBuffer(recp.key) && recp.scheme === keySchemes.private_group
     )
 
     const validCount = validPkRecps.length + validGroupkeyRecps.length
