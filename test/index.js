@@ -6,6 +6,7 @@ const test = require('tape')
 const { check } = require('ssb-encryption-format')
 const ssbKeys = require('ssb-keys')
 const buttwoo = require('ssb-buttwoo/format')
+const { keySchemes } = require('private-group-spec')
 
 const Box2 = require('../format')
 
@@ -280,6 +281,37 @@ test('cannot encrypt to more than 1 group recipients', (t) => {
     t.throws(() => {
       box2.encrypt(plaintext, opts)
     }, /private-group spec only supports one group recipient, but you've tried to use 2/)
+
+    t.end()
+  })
+})
+
+test('encrypt accepts keys as recps', (t) => {
+  const box2 = Box2()
+  const keys = ssbKeys.generate(null, 'alice', 'buttwoo-v1')
+
+  box2.setup({ keys }, () => {
+    const opts = {
+      keys,
+      content: { type: 'post', text: 'super secret' },
+      previous: null,
+      timestamp: 12345678900,
+      tag: buttwoo.tags.SSB_FEED,
+      hmacKey: null,
+      recps: [
+        {
+          key: Buffer.from(
+            '30720d8f9cbf37f6d7062826f6decac93e308060a8aaaa77e6a4747f40ee1a76',
+            'hex'
+          ),
+          scheme: keySchemes.private_group,
+        },
+      ],
+    }
+
+    const plaintext = buttwoo.toPlaintextBuffer(opts)
+
+    box2.encrypt(plaintext, opts)
 
     t.end()
   })
