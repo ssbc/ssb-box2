@@ -64,7 +64,6 @@ function makeEncryptionFormat() {
     })
   }
 
-  //TODO: update docs
   function addGroupInfo(id, info) {
     _keyringReady.onReady(() => {
       _keyring.group.add(id, info, reportError)
@@ -106,7 +105,9 @@ function makeEncryptionFormat() {
 
     const validGroupkeyRecps = recps.filter(
       (recp) =>
-        recp && Buffer.isBuffer(recp.key) && recp.scheme === keySchemes.private_group
+        recp &&
+        Buffer.isBuffer(recp.key) &&
+        recp.scheme === keySchemes.private_group
     )
 
     const validCount = validPkRecps.length + validGroupkeyRecps.length
