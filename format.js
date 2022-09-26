@@ -12,6 +12,7 @@ const { box, unbox } = require('envelope-js')
 const { SecretKey } = require('ssb-private-group-keys')
 const Keyring = require('ssb-keyring')
 const { ReadyGate } = require('./utils')
+const { keySchemes } = require('private-group-spec')
 
 function reportError(err) {
   if (err) console.error(err)
@@ -78,6 +79,16 @@ function makeEncryptionFormat() {
     })
   }
 
+  function getGroupKeyInfo(groupId, cb) {
+    if (cb === undefined) return promisify(getGroupKeyInfo)(groupId)
+
+    if (!groupId) cb(new Error('Group id required'))
+
+    _keyringReady.onReady(() => {
+      cb(null, _keyring.group.get(groupId))
+    })
+  }
+
   function addKeypair(keypair) {
     _keyringReady.onReady(() => {
       _keyring.dm.addFromSSBKeys(keypair)
@@ -89,17 +100,24 @@ function makeEncryptionFormat() {
     const authorId = opts.keys.id
     const previousId = opts.previous
 
-    const validRecps = recps
+    const validPkRecps = recps
       .filter((recp) => typeof recp === 'string')
       .filter((recp) => recp === authorId || _isGroup(recp) || _isFeed(recp))
 
-    if (validRecps.length === 0) {
+    const validGroupkeyRecps = recps.filter(
+      (recp) =>
+        recp && Buffer.isBuffer(recp.key) && recp.scheme === keySchemes.private_group
+    )
+
+    const validCount = validPkRecps.length + validGroupkeyRecps.length
+
+    if (validCount === 0) {
       // prettier-ignore
       throw new Error(`no box2 keys found for recipients: ${recps}`)
     }
-    if (validRecps.length > 16) {
+    if (validCount > 16) {
       // prettier-ignore
-      throw new Error(`private-group spec allows maximum 16 slots, but you've tried to use ${validRecps.length}`)
+      throw new Error(`private-group spec allows maximum 16 slots, but you've tried to use ${validCount}`)
     }
     // FIXME: move these validations to ssb-groups
     // if (validRecps.filter(isGroup).length === 0) {
@@ -110,15 +128,19 @@ function makeEncryptionFormat() {
     //   // prettier-ignore
     //   throw new Error(`first recipient must be a group, but you've tried to use ${validRecps[0]}`)
     // }
-    const groupRecpsCount = validRecps.filter(_isGroup).length
+    const groupRecpsCount =
+      validPkRecps.filter(_isGroup).length + validGroupkeyRecps.length
     if (groupRecpsCount > 1) {
       // prettier-ignore
       throw new Error(`private-group spec only supports one group recipient, but you've tried to use ${groupRecpsCount}`)
     }
 
-    const encryptionKeys = _keyring
-      .encryptionKeys(authorId, validRecps)
-      .filter((x) => x !== null)
+    const encryptionKeys = [
+      ..._keyring
+        .encryptionKeys(authorId, validPkRecps)
+        .filter((x) => x !== null),
+      ...validGroupkeyRecps,
+    ]
 
     const msgSymmKey = new SecretKey().toBuffer()
     const authorIdBFE = BFE.encode(authorId)
@@ -164,6 +186,7 @@ function makeEncryptionFormat() {
     setOwnDMKey,
     addGroupInfo,
     listGroupIds,
+    getGroupKeyInfo,
     addKeypair,
   }
 }

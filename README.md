@@ -71,6 +71,7 @@ on the `sbot.box2` namespace:
   must be a buffer. The key can then be used as a "recp" to encrypt messages to
   the group. Note that the keys are not persisted in this module.
 - `listGroupIds(cb) => [groupIds]`: Lists all groupIds whose messages you're able to decrypt. Returns a promise if cb isn't provided.
+- `getGroupKeyInfo(id, cb) => { key, scheme }`: Gets the key and scheme for a group. Returns a promise if cb isn't provided.
 
 ## Usage as a standalone
 
