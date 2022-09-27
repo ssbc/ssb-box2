@@ -119,12 +119,12 @@ test('box2 group message can be read with tribes', (t) => {
     'hex'
   )
 
-  sbot.box2.addGroupInfo(groupId, { key: testkey })
-
   const registerOpts = {
     key: testkey.toString('base64'),
     root: '%MPB9vxHO0pvi2ve2wh6Do05ZrV7P6ZjUQ+IEYnzLfTs=.sha256',
   }
+
+  sbot.box2.addGroupInfo(groupId, { key: testkey, root: registerOpts.root })
 
   db1Sbot.tribes.register(groupId, registerOpts, (err) => {
     db1Sbot.tribes.registerAuthors(groupId, [keys.id, db1Keys.id], (err) => {
@@ -240,6 +240,7 @@ test('can get group info', async (t) => {
 
   t.true(Buffer.isBuffer(info.key), 'key is a buffer')
   t.equal(info.scheme, 'envelope-large-symmetric-group', 'scheme is correct')
+  t.true(ref.isMsg(info.root), 'has root')
 
   t.end()
 })
