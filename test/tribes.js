@@ -53,7 +53,7 @@ test('setup', (t) => {
       path: db1Dir,
     })
 
-    t.end()
+  t.end()
 })
 
 test('box2 message can be read with tribes', (t) => {
@@ -119,11 +119,11 @@ test('box2 group message can be read with tribes', (t) => {
     'hex'
   )
 
-  sbot.box2.addGroupKey(groupId, testkey)
+  sbot.box2.addGroupInfo(groupId, { key: testkey })
 
   const registerOpts = {
     key: testkey.toString('base64'),
-    root: '%MPB9vxHO0pvi2ve2wh6Do05ZrV7P6ZjUQ+IEYnzLfTs=.sha256'
+    root: '%MPB9vxHO0pvi2ve2wh6Do05ZrV7P6ZjUQ+IEYnzLfTs=.sha256',
   }
 
   db1Sbot.tribes.register(groupId, registerOpts, (err) => {
@@ -143,10 +143,13 @@ test('box2 group message can be read with tribes', (t) => {
           t.equal(msg.content.text, 'super secret')
 
           db1Sbot.add(privateMsg.value, (err) => {
-            db1Sbot.get({ id: privateMsg.key, private: true }, (err, db1Msg) => {
-              t.equal(db1Msg.content.text, 'super secret')
-              t.end()
-            })
+            db1Sbot.get(
+              { id: privateMsg.key, private: true },
+              (err, db1Msg) => {
+                t.equal(db1Msg.content.text, 'super secret')
+                t.end()
+              }
+            )
           })
         })
       })
@@ -217,17 +220,22 @@ test('we can decrypt a group message created with tribes', (t) => {
 })
 
 test('can list group ids', (t) => {
-  sbot.box2.listGroupIds().then(ids=> {
-    t.equal(ids.length, 1, 'lists the one group we are in')
+  sbot.box2
+    .listGroupIds()
+    .then((ids) => {
+      t.equal(ids.length, 1, 'lists the one group we are in')
 
-    t.true(ref.isCloakedMsg(ids[0]), 'lists a group id and not something else')
+      t.true(
+        ref.isCloakedMsg(ids[0]),
+        'lists a group id and not something else'
+      )
 
-    t.end()
-  })
+      t.end()
+    })
     .catch(t.error)
 })
 
-test('can get group info', async t => {
+test('can get group info', async (t) => {
   const info = await sbot.box2.getGroupKeyInfo(groupId)
 
   t.true(Buffer.isBuffer(info.key), 'key is a buffer')

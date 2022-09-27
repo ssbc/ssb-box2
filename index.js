@@ -12,7 +12,7 @@ exports.init = function (ssb, config) {
 
   return {
     setOwnDMKey: encryptionFormat.setOwnDMKey,
-    addGroupKey: encryptionFormat.addGroupKey,
+    addGroupInfo: encryptionFormat.addGroupInfo,
     listGroupIds: encryptionFormat.listGroupIds,
     getGroupKeyInfo: encryptionFormat.getGroupKeyInfo,
     addKeypair: encryptionFormat.addKeypair,

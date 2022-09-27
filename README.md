@@ -65,11 +65,12 @@ on the `sbot.box2` namespace:
 - `setOwnDMKey(key)`: Adds a `key` (a buffer) to the list of keys that can be
   used to encrypt messages to yourself. By specifying the direct message (DM)
   for yourself, you are free to supply that from any source. The key you provide
-  *will* be persisted locally. For direct messaging other feeds, a key is
+  _will_ be persisted locally. For direct messaging other feeds, a key is
   automatically derived.
-- `addGroupKey(groupId, groupKey)`: `groupId` must be a string and `groupKey`
-  must be a buffer. The key can then be used as a "recp" to encrypt messages to
-  the group. Note that the keys are not persisted in this module.
+- `addGroupInfo(groupId, groupInfo)`: `groupId` must be a string and `groupInfo` must be an object. `groupInfo` can have these keys:
+  - `key` must be a buffer. The key can then be used as a "recp" to encrypt messages to the group. Note that the keys are not persisted in this module.
+  - `scheme` _String_ - scheme of that encryption key (optional, there is only one option at the moment which we default to)
+  - `root` _MessageId_ the id of the `group/init` message
 - `listGroupIds(cb) => [groupIds]`: Lists all groupIds whose messages you're able to decrypt. Returns a promise if cb isn't provided.
 - `getGroupKeyInfo(id, cb) => { key, scheme }`: Gets the key and scheme for a group. Returns a promise if cb isn't provided.
 
@@ -101,6 +102,6 @@ box2Format.setup({ keys }, () => {
 })
 ```
 
-[SSB DB2]: https://github.com/ssb-ngi-pointer/ssb-db2/
+[ssb db2]: https://github.com/ssb-ngi-pointer/ssb-db2/
 [ssb-tribes]: https://github.com/ssbc/ssb-tribes/
 [ssb-keyring]: https://gitlab.com/ahau/lib/ssb-keyring/

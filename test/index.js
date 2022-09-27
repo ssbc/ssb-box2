@@ -109,13 +109,12 @@ test('decrypt as group recipient', (t) => {
 
   box2.setup({ keys }, () => {
     const groupId = '%Lihvp+fMdt5CihjbOY6eZc0qCe0eKsrN2wfgXV2E3PM=.cloaked'
-    box2.addGroupKey(
-      groupId,
-      Buffer.from(
+    box2.addGroupInfo(groupId, {
+      key: Buffer.from(
         '30720d8f9cbf37f6d7062826f6decac93e308060a8aaaa77e6a4747f40ee1a76',
         'hex'
-      )
-    )
+      ),
+    })
 
     const opts = {
       keys,
@@ -250,20 +249,18 @@ test('cannot encrypt to more than 1 group recipients', (t) => {
   box2.setup({ keys }, () => {
     const groupId1 = '%Aihvp+fMdt5CihjbOY6eZc0qCe0eKsrN2wfgXV2E3PM=.cloaked'
     const groupId2 = '%Bihvp+fMdt5CihjbOY6eZc0qCe0eKsrN2wfgXV2E3PM=.cloaked'
-    box2.addGroupKey(
-      groupId1,
-      Buffer.from(
+    box2.addGroupInfo(groupId1, {
+      key: Buffer.from(
         '30720d8f9cbf37f6d7062826f6decac93e308060a8aaaa77e6a4747f40ee1a76',
         'hex'
-      )
-    )
-    box2.addGroupKey(
-      groupId2,
-      Buffer.from(
+      ),
+    })
+    box2.addGroupInfo(groupId2, {
+      key: Buffer.from(
         'ff720d8f9cbf37f6d7062826f6decac93e308060a8aaaa77e6a4747f40ee1a76',
         'hex'
-      )
-    )
+      ),
+    })
 
     const opts = {
       keys,
