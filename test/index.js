@@ -192,7 +192,7 @@ test('cannot encrypt to zero valid recipients', (t) => {
 
     t.throws(() => {
       box2.encrypt(plaintext, opts)
-    }, /no box2 keys found for recipients/)
+    }, /Unsupported recipient: nonsense/)
 
     t.end()
   })
