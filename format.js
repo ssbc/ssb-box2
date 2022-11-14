@@ -51,7 +51,7 @@ function makeEncryptionFormat() {
     legacyMode = false
   }
 
-  function isPrimordialGroup(recp) {
+  function isRawGroupKey(recp) {
     return (
       recp &&
       recp.scheme === keySchemes.private_group &&
@@ -165,7 +165,7 @@ function makeEncryptionFormat() {
     const previousId = opts.previous
 
     const encryptionKeys = recps.map((recp) => {
-      if (isPrimordialGroup(recp)) {
+      if (isRawGroupKey(recp)) {
         return recp
       } else if (recp === authorId || keyring.signing.has(recp)) {
         return keyring.self.get()
