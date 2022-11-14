@@ -78,19 +78,18 @@ function makeEncryptionFormat() {
     })
   }
 
-  function addDMPair(myKeys, theirId) {
+  function addDMPairSync(myKeys, theirId) {
+    if (!keyringReady.ready) throw new Error('keyring not ready')
     const myDhKeysBFE = new DHKeys(myKeys, { fromEd25519: true })
     const theirKeys = { public: BFE.encode(theirId).slice(2) }
     const theirDhKeysBFE = new DHKeys(theirKeys, { fromEd25519: true })
-    keyringReady.onReady(() => {
-      keyring.dm.add(
-        myKeys.id,
-        theirId,
-        myDhKeysBFE,
-        theirDhKeysBFE,
-        reportError
-      )
-    })
+    return keyring.dm.add(
+      myKeys.id,
+      theirId,
+      myDhKeysBFE,
+      theirDhKeysBFE,
+      reportError
+    )
   }
 
   function addDMTriangle(xRootId, xLeafId, yLeafId) {
@@ -144,7 +143,7 @@ function makeEncryptionFormat() {
   function dmEncryptionKey(authorKeys, recp) {
     const err = new Error('DM keys not supported for recipient ' + recp)
     if (legacyMode) {
-      if (!keyring.dm.has(authorKeys.id, recp)) addDMPair(authorKeys, recp)
+      if (!keyring.dm.has(authorKeys.id, recp)) addDMPairSync(authorKeys, recp)
       const dmKeys = keyring.dm.get(authorKeys.id, recp)
       if (!dmKeys) throw err
       return dmKeys
@@ -218,7 +217,7 @@ function makeEncryptionFormat() {
   function dmDecryptionKeys(authorId) {
     if (legacyMode) {
       const dmKeys = keyring.dm.get(mainKeys.id, authorId)
-      if (!dmKeys) addDMPair(mainKeys, authorId)
+      if (!dmKeys) addDMPairSync(mainKeys, authorId)
       if (!keyring.dm.has(mainKeys.id, authorId)) return []
       return [keyring.dm.get(mainKeys.id, authorId)]
     } else {
@@ -266,7 +265,7 @@ function makeEncryptionFormat() {
     // Internal APIs:
     addSigningKeys,
     addSigningKeysSync,
-    addDMPair,
+    addDMPairSync,
     addDMTriangle,
     getRootSigningKey,
     disableLegacyMode,

@@ -79,8 +79,11 @@ function monitorForest(ssb, encryptionFormat) {
           if (!myLeaf) return cb()
           encryptionFormat.addDMTriangle(myRoot.id, myLeaf.id, theirLeaf.id)
           encryptionFormat.addDMTriangle(theirRoot.id, theirLeaf.id, myLeaf.id)
-          encryptionFormat.addDMPair(myLeaf.keys, theirLeaf.id)
-          cb()
+          if (encryptionFormat.addDMPairSync(myLeaf.keys, theirLeaf.id)) {
+            ssb.db.reindexEncrypted(cb)
+          } else {
+            cb()
+          }
         })
       }),
 
