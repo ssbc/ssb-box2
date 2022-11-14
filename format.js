@@ -80,16 +80,11 @@ function makeEncryptionFormat() {
 
   function addDMPairSync(myKeys, theirId) {
     if (!keyringReady.ready) throw new Error('keyring not ready')
-    const myDhKeysBFE = new DHKeys(myKeys, { fromEd25519: true })
+    const myId = myKeys.id
+    const myDhKeys = new DHKeys(myKeys, { fromEd25519: true })
     const theirKeys = { public: BFE.encode(theirId).slice(2) }
-    const theirDhKeysBFE = new DHKeys(theirKeys, { fromEd25519: true })
-    return keyring.dm.add(
-      myKeys.id,
-      theirId,
-      myDhKeysBFE,
-      theirDhKeysBFE,
-      reportError
-    )
+    const theirDhKeys = new DHKeys(theirKeys, { fromEd25519: true })
+    return keyring.dm.add(myId, theirId, myDhKeys, theirDhKeys, reportError)
   }
 
   function addDMTriangle(xRootId, xLeafId, yLeafId) {
