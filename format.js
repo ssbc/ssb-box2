@@ -79,11 +79,11 @@ function makeEncryptionFormat() {
   }
 
   function addDMPair(myKeys, theirId) {
-    const myDhKeysBFE = new DHKeys(myKeys, { fromEd25519: true }).toBFE()
+    const myDhKeysBFE = new DHKeys(myKeys, { fromEd25519: true })
     const theirKeys = { public: BFE.encode(theirId).slice(2) }
-    const theirDhKeysBFE = new DHKeys(theirKeys, { fromEd25519: true }).toBFE()
+    const theirDhKeysBFE = new DHKeys(theirKeys, { fromEd25519: true })
     keyringReady.onReady(() => {
-      keyring.dm.addPair(
+      keyring.dm.add(
         myKeys.id,
         theirId,
         myDhKeysBFE,
@@ -93,15 +93,16 @@ function makeEncryptionFormat() {
     })
   }
 
-  function addDMTriplet(xRootId, xLeafId, yLeafId) {
+  function addDMTriangle(xRootId, xLeafId, yLeafId) {
     keyringReady.onReady(() => {
-      keyring.dm.addTriplet(xRootId, xLeafId, yLeafId, reportError)
+      keyring.dm.addTriangle(xRootId, xLeafId, yLeafId, reportError)
     })
   }
 
-  function addSigningKeys(id, keys) {
+  function addSigningKeys(keys, name) {
     keyringReady.onReady(() => {
-      keyring.signing.add(id, keys)
+      if (name) keyring.signing.addTagged(name, keys)
+      else keyring.signing.add(keys)
     })
   }
 
@@ -145,7 +146,7 @@ function makeEncryptionFormat() {
     } else {
       const theirRootId = recp
       const myLeafId = authorKeys.id
-      const theirLeafId = keyring.dm.get(theirRootId, myLeafId)
+      const theirLeafId = keyring.dm.triangulate(theirRootId, myLeafId)
       if (!theirLeafId) throw err
       const dmKeys = keyring.dm.get(myLeafId, theirLeafId)
       if (!dmKeys) throw err
@@ -218,7 +219,7 @@ function makeEncryptionFormat() {
     } else {
       const myRootKeys = keyring.signing.get('root')
       if (!myRootKeys) return []
-      const myLeafId = keyring.dm.get(myRootKeys.id, authorId)
+      const myLeafId = keyring.dm.triangulate(myRootKeys.id, authorId)
       if (!myLeafId) return []
       if (!keyring.dm.has(myLeafId, authorId)) return []
       return [keyring.dm.get(myLeafId, authorId)]
@@ -254,13 +255,13 @@ function makeEncryptionFormat() {
     decrypt,
     // ssb-box2 specific APIs:
     setOwnDMKey,
-    addSigningKeys,
     addGroupInfo,
     listGroupIds,
     getGroupKeyInfo,
     // Internal APIs:
+    addSigningKeys,
     addDMPair,
-    addDMTriplet,
+    addDMTriangle,
     getRootSigningKey,
     disableLegacyMode,
   }

@@ -45,11 +45,11 @@ function monitorForest(ssb, encryptionFormat) {
       pull.asyncMap((branch, cb) => {
         let foundMyRoot = false
         for (let i = 0; i < branch.length; i++) {
-          const { id, keys, purpose } = branch[i]
+          const { keys, purpose } = branch[i]
           if (keys) {
-            encryptionFormat.addSigningKeys(id, keys)
+            encryptionFormat.addSigningKeys(keys)
             if (i === 0 && purpose === 'root' && !rootKeys) {
-              foundMyRoot = encryptionFormat.addSigningKeys('root', keys)
+              foundMyRoot = encryptionFormat.addSigningKeys(keys, 'root')
               rootKeys = keys
             }
           }
@@ -79,8 +79,8 @@ function monitorForest(ssb, encryptionFormat) {
             }
           }
           if (!myLeaf) return cb()
-          encryptionFormat.addDMTriplet(myRoot.id, myLeaf.id, theirLeaf.id)
-          encryptionFormat.addDMTriplet(theirRoot.id, theirLeaf.id, myLeaf.id)
+          encryptionFormat.addDMTriangle(myRoot.id, myLeaf.id, theirLeaf.id)
+          encryptionFormat.addDMTriangle(theirRoot.id, theirLeaf.id, myLeaf.id)
           encryptionFormat.addDMPair(myLeaf.keys, theirLeaf.id)
           cb()
         })

@@ -12,7 +12,7 @@ exports.init = function (ssb, config) {
   if (ssb.db) ssb.db.installEncryptionFormat(encryptionFormat)
 
   if (config.box2 && config.box2.legacyMode) {
-    encryptionFormat.addSigningKeys(config.keys.id, config.keys)
+    encryptionFormat.addSigningKeys(config.keys)
   } else if (!ssb.metafeeds) {
     throw new Error('ssb-box2 requires ssb-meta-feeds plugin')
   } else {
