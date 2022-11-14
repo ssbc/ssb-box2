@@ -23,7 +23,8 @@ npm install ssb-box2
 ## Usage in ssb-db2
 
 - Requires `secret-stack@^6.2.0`
-- Requires `ssb-db2@>=5.0.0`
+- Requires `ssb-db2>=5.0.0`
+- Requires `ssb-meta-feeds>=0.38.0`
 
 The example below shows how to encrypt a message to yourself using box2.
 
@@ -73,6 +74,31 @@ on the `sbot.box2` namespace:
   - `root` _MessageId_ the id of the `group/init` message
 - `listGroupIds(cb) => [groupIds]`: Lists all groupIds whose messages you're able to decrypt. Returns a promise if cb isn't provided.
 - `getGroupKeyInfo(id, cb) => { key, scheme }`: Gets the key and scheme for a group. Returns a promise if cb isn't provided.
+
+## DM Encryption
+
+When one of the `recps` is your foreign feed, then the encrypted message is a
+"DM" for that foreign feed, and it'll create a Diffie-Hellman exchange.
+
+ssb-box2 expects that the foreign feed is a root metafeed ID, and internally it
+will find the leaf feed ID that corresponds to your leaf feed ID to derive the
+shared secret. **This means that you need to have `ssb-meta-feeds` installed**.
+NOTE: the foreign feed (the one in the `recps` array) MUST be a root metafeed
+ID, not a leaf feed ID.
+
+You can choose to disable metafeeds support by setting the legacy configuration
+option in your ssb-config object:
+
+```
+{
+  box2: {
+    legacyMode: true
+  }
+}
+```
+
+In legacy mode, any feed ID in `recps` will be used directly in a Diffie-Hellman
+exchange to create a shared secret for DMs.
 
 ## Usage as a standalone
 

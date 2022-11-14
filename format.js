@@ -152,7 +152,7 @@ function makeEncryptionFormat() {
       const theirRootId = recp
       const myLeafId = authorKeys.id
       const theirLeafId = keyring.dm.triangulate(theirRootId, myLeafId)
-      if (!theirLeafId) throw err
+      if (!theirLeafId || typeof theirLeafId !== 'string') throw err
       const dmKeys = keyring.dm.get(myLeafId, theirLeafId)
       if (!dmKeys) throw err
       return dmKeys

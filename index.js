@@ -13,11 +13,16 @@ exports.init = function (ssb, config) {
 
   if (config.box2 && config.box2.legacyMode) {
     encryptionFormat.addSigningKeys(config.keys)
-  } else if (!ssb.metafeeds) {
-    throw new Error('ssb-box2 requires ssb-meta-feeds plugin')
   } else {
     encryptionFormat.disableLegacyMode()
-    monitorForest(ssb, encryptionFormat)
+    // Wait a bit for other secret-stack plugins (ssb-meta-feeds) to load
+    setTimeout(() => {
+      if (!ssb.metafeeds) {
+        throw new Error('ssb-box2 requires ssb-meta-feeds plugin')
+      } else {
+        monitorForest(ssb, encryptionFormat)
+      }
+    }, 1)
   }
 
   return {
