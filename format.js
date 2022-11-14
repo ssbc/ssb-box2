@@ -155,11 +155,14 @@ function makeEncryptionFormat() {
       const myLeafId = authorKeys.id
       const theirLeafId = keyring.dm.triangulate(theirRootId, myLeafId)
       if (!theirLeafId || typeof theirLeafId !== 'string') {
-        throw new Error('DM keys not supported for recipient ' + recp)
+        throw new Error('DM encryption failed to triangulate ' + theirRootId)
       }
       const dmKeys = keyring.dm.get(myLeafId, theirLeafId)
       if (!dmKeys) {
-        throw new Error('DM keys not supported for recipient ' + recp)
+        throw new Error(
+          'DM encryption failed to find DH keys for mirrored leaf feed ' +
+            theirLeafId
+        )
       }
       return dmKeys
     }
