@@ -74,6 +74,7 @@ on the `sbot.box2` namespace:
   - `root` _MessageId_ the id of the `group/init` message
 - `listGroupIds(cb) => [groupIds]`: Lists all groupIds whose messages you're able to decrypt. Returns a promise if cb isn't provided.
 - `getGroupKeyInfo(id, cb) => { key, scheme }`: Gets the key and scheme for a group. Returns a promise if cb isn't provided.
+- `canDM(myLeafFeedId, theirRootFeedId, cb)`: Checks if you can create an encrypted message ("DM") for a given `theirRootFeedId` (which must be a bendybutt-v1 root metafeed ID) using your `myLeafFeedId` as the author. Delivers a boolean on the callback.
 
 ## DM Encryption
 

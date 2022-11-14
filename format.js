@@ -93,6 +93,13 @@ function makeEncryptionFormat() {
     })
   }
 
+  function canDM(myLeafId, theirRootId, cb) {
+    keyringReady.onReady(() => {
+      const theirLeafId = keyring.dm.triangulate(theirRootId, myLeafId)
+      cb(null, !!theirLeafId)
+    })
+  }
+
   function addSigningKeys(keys, name) {
     keyringReady.onReady(() => {
       addSigningKeysSync(keys, name)
@@ -257,6 +264,7 @@ function makeEncryptionFormat() {
     addGroupInfo,
     listGroupIds,
     getGroupKeyInfo,
+    canDM,
     // Internal APIs:
     addSigningKeys,
     addSigningKeysSync,

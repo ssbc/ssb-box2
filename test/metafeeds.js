@@ -8,6 +8,62 @@ const ssbKeys = require('ssb-keys')
 const Testbot = require('./helpers/testbot')
 const replicate = require('./helpers/replicate')
 
+test('can DM known mirrored leaf', async (t) => {
+  const alice = Testbot({
+    keys: ssbKeys.generate(null, 'alice'),
+    mfSeed: Buffer.from(
+      '000000000000000000000000000000000000000000000000000000000000a1ce',
+      'hex'
+    ),
+  })
+  const bob = Testbot({
+    keys: ssbKeys.generate(null, 'bob'),
+    mfSeed: Buffer.from(
+      '0000000000000000000000000000000000000000000000000000000000000b0b',
+      'hex'
+    ),
+  })
+
+  const aliceRoot = await p(alice.metafeeds.findOrCreate)()
+  const bobRoot = await p(bob.metafeeds.findOrCreate)()
+
+  const aliceChess = await p(alice.metafeeds.findOrCreate)({ purpose: 'chess' })
+  t.pass("alice's chess subfeed created")
+  const bobChess = await p(bob.metafeeds.findOrCreate)({ purpose: 'chess' })
+  t.pass("bob's chess subfeed created")
+
+  await replicate(alice, bob)
+  t.pass('alice and bob replicated')
+
+  const can = await p(alice.box2.canDM)(aliceChess.id, bobRoot.id)
+  t.true(can, 'alice can DM bob')
+
+  await p(alice.close)(true)
+  await p(bob.close)(true)
+})
+
+test('cannot DM unknown feed ID', async (t) => {
+  const alice = Testbot({
+    keys: ssbKeys.generate(null, 'alice'),
+    mfSeed: Buffer.from(
+      '000000000000000000000000000000000000000000000000000000000000a1ce',
+      'hex'
+    ),
+  })
+
+  const aliceRoot = await p(alice.metafeeds.findOrCreate)()
+
+  const aliceChess = await p(alice.metafeeds.findOrCreate)({ purpose: 'chess' })
+  t.pass("alice's chess subfeed created")
+
+  const unknownId = ssbKeys.generate(null, 'bob', 'bendybutt-v1').id
+
+  const can = await p(alice.box2.canDM)(aliceChess.id, unknownId)
+  t.false(can, 'alice cannot DM unknown')
+
+  await p(alice.close)(true)
+})
+
 test('two chess subfeeds DM each other', async (t) => {
   const alice = Testbot({
     keys: ssbKeys.generate(null, 'alice'),
@@ -53,7 +109,7 @@ test('two chess subfeeds DM each other', async (t) => {
   await p(bob.close)(true)
 })
 
-test('cannot use leaf feed as recp', async (t) => {
+test('cannot use leaf feed as DM recp', async (t) => {
   const alice = Testbot({
     keys: ssbKeys.generate(null, 'alice'),
     mfSeed: Buffer.from(
