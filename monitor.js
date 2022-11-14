@@ -34,9 +34,7 @@ function reindexAndRestart(ssb, encryptionFormat, drain) {
  * this is why we need this information
  */
 function monitorForest(ssb, encryptionFormat) {
-  encryptionFormat.getRootSigningKey((err, rootKeys) => {
-    if (err) console.warn(err)
-
+  encryptionFormat.getRootSigningKey((_err, rootKeys) => {
     let drain = null
     pull(
       ssb.metafeeds.branchStream({ old: true, live: true }),
