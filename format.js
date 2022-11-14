@@ -101,9 +101,14 @@ function makeEncryptionFormat() {
 
   function addSigningKeys(keys, name) {
     keyringReady.onReady(() => {
-      if (name) keyring.signing.addTagged(name, keys)
-      else keyring.signing.add(keys)
+      addSigningKeysSync(keys, name)
     })
+  }
+
+  function addSigningKeysSync(keys, name) {
+    if (!keyringReady.ready) throw new Error('keyring not ready')
+    if (name) return keyring.signing.addTagged(name, keys)
+    else return keyring.signing.add(keys)
   }
 
   function getRootSigningKey(cb) {
@@ -260,6 +265,7 @@ function makeEncryptionFormat() {
     getGroupKeyInfo,
     // Internal APIs:
     addSigningKeys,
+    addSigningKeysSync,
     addDMPair,
     addDMTriangle,
     getRootSigningKey,

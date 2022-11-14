@@ -47,9 +47,9 @@ function monitorForest(ssb, encryptionFormat) {
         for (let i = 0; i < branch.length; i++) {
           const { keys, purpose } = branch[i]
           if (keys) {
-            encryptionFormat.addSigningKeys(keys)
+            encryptionFormat.addSigningKeysSync(keys)
             if (i === 0 && purpose === 'root' && !rootKeys) {
-              foundMyRoot = encryptionFormat.addSigningKeys(keys, 'root')
+              foundMyRoot = encryptionFormat.addSigningKeysSync(keys, 'root')
               rootKeys = keys
             }
           }
