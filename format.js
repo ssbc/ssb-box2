@@ -108,7 +108,7 @@ function makeEncryptionFormat() {
 
   function addSigningKeysSync(keys, name) {
     if (!keyringReady.ready) throw new Error('keyring not ready')
-    if (name) return keyring.signing.addTagged(name, keys)
+    if (name) return keyring.signing.addNamed(name, keys)
     else return keyring.signing.add(keys)
   }
 
