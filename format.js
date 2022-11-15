@@ -245,17 +245,17 @@ function makeEncryptionFormat() {
     const authorBFE = BFE.encode(authorId)
     const previousBFE = BFE.encode(opts.previous)
 
-    const group = keyring.group.list().map(keyring.group.get)
-    const self = selfDecryptionKeys(authorId)
-    const dm = dmDecryptionKeys(authorId)
+    const groupKeys = keyring.group.list().map(keyring.group.get)
+    const selfKey = selfDecryptionKeys(authorId)
+    const dmKey = dmDecryptionKeys(authorId)
 
     const unboxWith = unbox.bind(null, ciphertextBuf, authorBFE, previousBFE)
 
     let plaintextBuf = null
 
-    if ((plaintextBuf = unboxWith(group, ATTEMPT1))) return plaintextBuf
-    if ((plaintextBuf = unboxWith(self, ATTEMPT16))) return plaintextBuf
-    if ((plaintextBuf = unboxWith(dm, ATTEMPT16))) return plaintextBuf
+    if ((plaintextBuf = unboxWith(groupKeys, ATTEMPT1))) return plaintextBuf
+    if ((plaintextBuf = unboxWith(selfKey, ATTEMPT16))) return plaintextBuf
+    if ((plaintextBuf = unboxWith(dmKey, ATTEMPT16))) return plaintextBuf
 
     return null
   }

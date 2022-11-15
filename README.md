@@ -22,7 +22,7 @@ npm install ssb-box2
 
 ## Usage in ssb-db2
 
-- Requires `secret-stack@^6.2.0`
+- Requires `secret-stack>=6.2.0`
 - Requires `ssb-db2>=5.0.0`
 - Requires `ssb-meta-feeds>=0.38.0`
 
