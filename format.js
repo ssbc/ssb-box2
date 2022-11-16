@@ -145,11 +145,12 @@ function makeEncryptionFormat() {
   function dmEncryptionKey(authorKeys, recp) {
     if (legacyMode) {
       if (!keyring.dm.has(authorKeys.id, recp)) addDMPairSync(authorKeys, recp)
-      const dmKeys = keyring.dm.get(authorKeys.id, recp)
-      if (!dmKeys) {
+      const dmKey = keyring.dm.get(authorKeys.id, recp)
+      if (!dmKey) {
         throw new Error('DM keys not supported for recipient ' + recp)
       }
-      return dmKeys
+      dmKey.scheme = keySchemes.feed_id_dm
+      return dmKey
     } else {
       const theirRootId = recp
       const myLeafId = authorKeys.id
@@ -229,7 +230,9 @@ function makeEncryptionFormat() {
       const dmKeys = keyring.dm.get(mainKeys.id, authorId)
       if (!dmKeys) addDMPairSync(mainKeys, authorId)
       if (!keyring.dm.has(mainKeys.id, authorId)) return []
-      return [keyring.dm.get(mainKeys.id, authorId)]
+      const dmKey = keyring.dm.get(mainKeys.id, authorId)
+      dmKey.scheme = keySchemes.feed_id_dm
+      return [dmKey]
     } else {
       const myRootKeys = keyring.signing.get('root')
       if (!myRootKeys) return []
