@@ -31,13 +31,15 @@ test('setup', (t) => {
   sbot = SecretStack({ appKey: caps.shs })
     .use(require('ssb-db2/core'))
     .use(require('ssb-classic'))
-    .use(require('ssb-box'))
     .use(require('ssb-db2/compat/publish'))
     .use(require('ssb-db2/compat/post'))
     .use(require('../'))
     .call(null, {
       keys,
       path: dir,
+      box2: {
+        legacyMode: true
+      }
     })
 
   const db1Dir = readyDir('/tmp/ssb-db2-box2-tribes-db1')
@@ -56,7 +58,7 @@ test('setup', (t) => {
   t.end()
 })
 
-test('box2 message can be read with tribes', (t) => {
+test('DM message can be read with tribes1', (t) => {
   const testkey = Buffer.from(
     '30720d8f9cbf37f6d7062826f6decac93e308060a8aaaa77e6a4747f40ee1a76',
     'hex'
@@ -88,7 +90,7 @@ test('box2 message can be read with tribes', (t) => {
   })
 })
 
-test('second box2 message can be read with tribes', (t) => {
+test('second DM message can be read with tribes1', (t) => {
   const opts = {
     keys,
     content: { type: 'post', text: 'super secret 2' },
@@ -113,7 +115,7 @@ test('second box2 message can be read with tribes', (t) => {
   })
 })
 
-test('box2 group message can be read with tribes', (t) => {
+test('group message can be read with tribes1', (t) => {
   const testkey = Buffer.from(
     '50720d8f9cbf37f6d7062826f6decac93e308060a8aaaa77e6a4747f40ee1a76',
     'hex'
@@ -157,7 +159,7 @@ test('box2 group message can be read with tribes', (t) => {
   })
 })
 
-test('we can decrypt a message created with tribes', (t) => {
+test('we can decrypt a message created with tribes1', (t) => {
   let content = {
     type: 'post',
     text: 'super secret 3',
@@ -177,7 +179,7 @@ test('we can decrypt a message created with tribes', (t) => {
   })
 })
 
-test('we can decrypt a second message created with tribes', (t) => {
+test('we can decrypt a second message created with tribes1', (t) => {
   let content = {
     type: 'post',
     text: 'super secret 4',
@@ -197,7 +199,7 @@ test('we can decrypt a second message created with tribes', (t) => {
   })
 })
 
-test('we can decrypt a group message created with tribes', (t) => {
+test('we can decrypt a group message created with tribes1', (t) => {
   // group already registered
 
   let content = {
