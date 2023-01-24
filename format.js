@@ -118,9 +118,9 @@ function makeEncryptionFormat() {
     })
   }
 
-  function addGroupInfo(id, info) {
+  function addGroupInfo(id, info, cb) {
     keyringReady.onReady(() => {
-      keyring.group.add(id, info, reportError)
+      keyring.group.add(id, info, cb ? cb : reportError)
     })
   }
 
