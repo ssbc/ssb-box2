@@ -124,11 +124,11 @@ function makeEncryptionFormat() {
     })
   }
 
-  function listGroupIds(cb) {
-    if (cb === undefined) return promisify(listGroupIds)()
+  function listGroupIds(opts = {}, cb) {
+    if (cb === undefined) return promisify(listGroupIds)(opts)
 
     keyringReady.onReady(() => {
-      cb(null, keyring.group.list())
+      return cb(null, keyring.group.list({ live: !!opts.live }))
     })
   }
 
