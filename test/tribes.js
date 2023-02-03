@@ -223,9 +223,11 @@ test('we can decrypt a group message created with tribes1', (t) => {
 })
 
 test('can list group ids', (t) => {
-  sbot.box2
-    .listGroupIds()
-    .then((ids) => {
+  pull(
+    sbot.box2.listGroupIds(),
+    pull.collect((err, ids) => {
+      if (err) t.fail(err)
+
       t.equal(ids.length, 1, 'lists the one group we are in')
 
       t.true(
@@ -235,28 +237,26 @@ test('can list group ids', (t) => {
 
       t.end()
     })
-    .catch(t.error)
+  )
 })
 
 test('can list group ids live', (t) => {
-  sbot.box2.listGroupIds({ live: true }).then((idStream) => {
-    pull(
-      idStream,
-      pull.take(1),
-      pull.collect((err, ids) => {
-        if (err) t.fail(err)
+  pull(
+    sbot.box2.listGroupIds({ live: true }),
+    pull.take(1),
+    pull.collect((err, ids) => {
+      if (err) t.fail(err)
 
-        t.equal(ids.length, 1, 'lists the one group we are in')
+      t.equal(ids.length, 1, 'lists the one group we are in')
 
-        t.true(
-          ref.isCloakedMsg(ids[0]),
-          'lists a group id and not something else'
-        )
+      t.true(
+        ref.isCloakedMsg(ids[0]),
+        'lists a group id and not something else'
+      )
 
-        t.end()
-      })
-    )
-  })
+      t.end()
+    })
+  )
 })
 
 test('can get group info', async (t) => {
