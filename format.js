@@ -13,6 +13,7 @@ const { SecretKey, DHKeys } = require('ssb-private-group-keys')
 const { keySchemes } = require('private-group-spec')
 const Keyring = require('ssb-keyring')
 const { ReadyGate } = require('./utils')
+const pull = require('pull-stream')
 
 function reportError(err) {
   if (err) console.error(err)
@@ -124,12 +125,16 @@ function makeEncryptionFormat() {
     })
   }
 
-  function listGroupIds(cb) {
-    if (cb === undefined) return promisify(listGroupIds)()
-
-    keyringReady.onReady(() => {
-      cb(null, keyring.group.list())
-    })
+  function listGroupIds(opts = {}) {
+    return pull(
+      pull.values([0]),
+      pull.asyncMap((_, cb) => {
+        keyringReady.onReady(() => {
+          return cb(null, keyring.group.list({ live: !!opts.live }))
+        })
+      }),
+      pull.flatten()
+    )
   }
 
   function getGroupKeyInfo(groupId, cb) {
@@ -248,7 +253,7 @@ function makeEncryptionFormat() {
     const authorBFE = BFE.encode(authorId)
     const previousBFE = BFE.encode(opts.previous)
 
-    const groupKeys = keyring.group.list().map(keyring.group.get)
+    const groupKeys = keyring.group.listSync().map(keyring.group.get)
     const selfKey = selfDecryptionKeys(authorId)
     const dmKey = dmDecryptionKeys(authorId)
 

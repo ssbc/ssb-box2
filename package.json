@@ -18,13 +18,14 @@
     "pull-stream": "^3.6.14",
     "private-group-spec": "^2.1.1",
     "ssb-bfe": "^3.7.0",
-    "ssb-keyring": "3.0.0",
+    "ssb-keyring": "^4.1.0",
     "ssb-private-group-keys": "^1.1.1",
     "ssb-ref": "^2.16.0",
     "ssb-uri2": "^2.4.1"
   },
   "devDependencies": {
     "c8": "^7.11.0",
+    "eslint": "^8.32.0",
     "fast-deep-equal": "3.1.3",
     "husky": "^4.3.0",
     "mkdirp": "^1.0.4",

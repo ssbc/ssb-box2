@@ -10,6 +10,7 @@ const mkdirp = require('mkdirp')
 const SecretStack = require('secret-stack')
 const caps = require('ssb-caps')
 const ref = require('ssb-ref')
+const pull = require('pull-stream')
 
 function readyDir(dir) {
   rimraf.sync(dir)
@@ -38,8 +39,8 @@ test('setup', (t) => {
       keys,
       path: dir,
       box2: {
-        legacyMode: true
-      }
+        legacyMode: true,
+      },
     })
 
   const db1Dir = readyDir('/tmp/ssb-db2-box2-tribes-db1')
@@ -222,9 +223,11 @@ test('we can decrypt a group message created with tribes1', (t) => {
 })
 
 test('can list group ids', (t) => {
-  sbot.box2
-    .listGroupIds()
-    .then((ids) => {
+  pull(
+    sbot.box2.listGroupIds(),
+    pull.collect((err, ids) => {
+      if (err) t.fail(err)
+
       t.equal(ids.length, 1, 'lists the one group we are in')
 
       t.true(
@@ -234,7 +237,26 @@ test('can list group ids', (t) => {
 
       t.end()
     })
-    .catch(t.error)
+  )
+})
+
+test('can list group ids live', (t) => {
+  pull(
+    sbot.box2.listGroupIds({ live: true }),
+    pull.take(1),
+    pull.collect((err, ids) => {
+      if (err) t.fail(err)
+
+      t.equal(ids.length, 1, 'lists the one group we are in')
+
+      t.true(
+        ref.isCloakedMsg(ids[0]),
+        'lists a group id and not something else'
+      )
+
+      t.end()
+    })
+  )
 })
 
 test('can get group info', async (t) => {
