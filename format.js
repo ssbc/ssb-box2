@@ -253,7 +253,13 @@ function makeEncryptionFormat() {
     const authorBFE = BFE.encode(authorId)
     const previousBFE = BFE.encode(opts.previous)
 
-    const groupKeys = keyring.group.listSync().map(keyring.group.get)
+    const groupKeys = keyring.group
+      .listSync()
+      .map(keyring.group.get)
+      .map(
+        (groupInfo) => groupInfo.readKeys // readKeys should have format Array<{key, scheme}>
+      )
+      .flat()
     const selfKey = selfDecryptionKeys(authorId)
     const dmKey = dmDecryptionKeys(authorId)
 
