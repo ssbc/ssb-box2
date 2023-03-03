@@ -187,7 +187,7 @@ function makeEncryptionFormat() {
       } else if (isFeed(recp)) {
         return dmEncryptionKey(opts.keys, recp)
       } else if (isGroupId(recp) && keyring.group.has(recp)) {
-        return keyring.group.get(recp)
+        return keyring.group.get(recp).writeKey
       } else throw new Error('Unsupported recipient: ' + recp)
     })
 
@@ -256,9 +256,7 @@ function makeEncryptionFormat() {
     const groupKeys = keyring.group
       .listSync()
       .map(keyring.group.get)
-      .map(
-        (groupInfo) => groupInfo.readKeys // readKeys should have format Array<{key, scheme}>
-      )
+      .map((groupInfo) => groupInfo.readKeys)
       .flat()
     const selfKey = selfDecryptionKeys(authorId)
     const dmKey = dmDecryptionKeys(authorId)

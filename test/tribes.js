@@ -262,8 +262,12 @@ test('can list group ids live', (t) => {
 test('can get group info', async (t) => {
   const info = await sbot.box2.getGroupKeyInfo(groupId)
 
-  t.true(Buffer.isBuffer(info.key), 'key is a buffer')
-  t.equal(info.scheme, 'envelope-large-symmetric-group', 'scheme is correct')
+  t.true(Buffer.isBuffer(info.writeKey.key), 'key is a buffer')
+  t.equal(
+    info.writeKey.scheme,
+    'envelope-large-symmetric-group',
+    'scheme is correct'
+  )
   t.true(ref.isMsg(info.root), 'has root')
 
   t.end()
