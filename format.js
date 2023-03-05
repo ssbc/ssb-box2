@@ -120,6 +120,8 @@ function makeEncryptionFormat() {
   }
 
   function addGroupInfo(id, info, cb) {
+    if (cb === undefined) return promisify(addGroupInfo)(id, info)
+
     keyringReady.onReady(() => {
       keyring.group.add(id, info, cb ? cb : reportError)
     })
@@ -137,8 +139,8 @@ function makeEncryptionFormat() {
     )
   }
 
-  function getGroupKeyInfo(groupId, cb) {
-    if (cb === undefined) return promisify(getGroupKeyInfo)(groupId)
+  function getGroupInfo(groupId, cb) {
+    if (cb === undefined) return promisify(getGroupInfo)(groupId)
 
     if (!groupId) cb(new Error('Group id required'))
 
@@ -283,7 +285,7 @@ function makeEncryptionFormat() {
     setOwnDMKey,
     addGroupInfo,
     listGroupIds,
-    getGroupKeyInfo,
+    getGroupInfo,
     canDM,
     // Internal APIs:
     addSigningKeys,

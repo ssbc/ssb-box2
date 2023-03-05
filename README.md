@@ -68,12 +68,12 @@ on the `sbot.box2` namespace:
   for yourself, you are free to supply that from any source. The key you provide
   _will_ be persisted locally. For direct messaging other feeds, a key is
   automatically derived.
-- `addGroupInfo(groupId, groupInfo, cb)`: `groupId` must be a cloaked message Id or a uri encoded group and `groupInfo` must be an object. `groupInfo` can have these keys:
+- `addGroupInfo(groupId, groupInfo, cb)`: `groupId` must be a cloaked message Id or a uri encoded group and `groupInfo` must be an object. Returns a promise if cb isn't provided. `groupInfo` can have these keys:
   - `key` must be a buffer. The key can then be used as a "recp" to encrypt messages to the group. Note that the keys are not persisted in this module.
   - `scheme` _String_ - scheme of that encryption key (optional, there is only one option at the moment which we default to)
   - `root` _MessageId_ the id of the `group/init` message
 - `listGroupIds({ live }) => PullStream<groupIds>`: Returns a pull stream of all groupIds whose messages you're able to decrypt. If `live` is true then it returns a pull stream with all previous but also all future group ids.
-- `getGroupKeyInfo(id, cb) => { key, scheme }`: Gets the key and scheme for a group. Returns a promise if cb isn't provided.
+- `getGroupInfo(id, cb) => { key, scheme }`: Gets the key and scheme for a group. Returns a promise if cb isn't provided.
 - `canDM(myLeafFeedId, theirRootFeedId, cb)`: Checks if you can create an encrypted message ("DM") for a given `theirRootFeedId` (which must be a bendybutt-v1 root metafeed ID) using your `myLeafFeedId` as the author. Delivers a boolean on the callback.
 
 ## DM Encryption

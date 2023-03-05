@@ -269,7 +269,7 @@ test('can list group ids live', (t) => {
 })
 
 test('can get group info', async (t) => {
-  const info = await sbot.box2.getGroupKeyInfo(groupId)
+  const info = await sbot.box2.getGroupInfo(groupId)
 
   t.true(Buffer.isBuffer(info.writeKey.key), 'key is a buffer')
   t.equal(
@@ -296,9 +296,9 @@ test('You can add multiple keys to a group and switch between them for writing',
   const key1 = { key: testkey, scheme }
   const key2 = { key: testkey2, scheme }
 
-  await p(sbot.box2.addGroupInfo)(groupId, { key: testkey, root: testRoot })
+  await sbot.box2.addGroupInfo(groupId, { key: testkey, root: testRoot })
 
-  const groupInfo1 = await p(sbot.box2.getGroupKeyInfo)(groupId)
+  const groupInfo1 = await sbot.box2.getGroupInfo(groupId)
 
   t.deepEquals(
     groupInfo1,
@@ -310,9 +310,9 @@ test('You can add multiple keys to a group and switch between them for writing',
     'adding first key worked'
   )
 
-  await p(sbot.box2.addGroupInfo)(groupId, { key: testkey2, root: testRoot })
+  await sbot.box2.addGroupInfo(groupId, { key: testkey2, root: testRoot })
 
-  const groupInfo2 = await p(sbot.box2.getGroupKeyInfo)(groupId)
+  const groupInfo2 = await sbot.box2.getGroupInfo(groupId)
 
   t.deepEquals(
     groupInfo2,

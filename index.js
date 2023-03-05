@@ -30,6 +30,6 @@ exports.init = function (ssb, config) {
     canDM: encryptionFormat.canDM,
     addGroupInfo: encryptionFormat.addGroupInfo,
     listGroupIds: encryptionFormat.listGroupIds,
-    getGroupKeyInfo: encryptionFormat.getGroupKeyInfo,
+    getGroupInfo: encryptionFormat.getGroupInfo,
   }
 }
