@@ -123,7 +123,15 @@ function makeEncryptionFormat() {
     if (cb === undefined) return promisify(addGroupInfo)(id, info)
 
     keyringReady.onReady(() => {
-      keyring.group.add(id, info, cb ? cb : reportError)
+      keyring.group.add(id, info, cb)
+    })
+  }
+
+  function pickGroupWriteKey(id, pickedKey, cb) {
+    if (cb === undefined) return promisify(pickGroupWriteKey)(id, pickedKey)
+
+    keyringReady.onReady(() => {
+      keyring.group.pickWriteKey(id, pickedKey, cb)
     })
   }
 
@@ -284,6 +292,7 @@ function makeEncryptionFormat() {
     // ssb-box2 specific APIs:
     setOwnDMKey,
     addGroupInfo,
+    pickGroupWriteKey,
     listGroupIds,
     getGroupInfo,
     canDM,

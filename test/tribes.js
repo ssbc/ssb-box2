@@ -11,7 +11,6 @@ const SecretStack = require('secret-stack')
 const caps = require('ssb-caps')
 const ref = require('ssb-ref')
 const pull = require('pull-stream')
-const { promisify: p } = require('util')
 
 function readyDir(dir) {
   rimraf.sync(dir)
@@ -292,6 +291,7 @@ test('teardown', (t) => {
 
 test('You can add multiple keys to a group and switch between them for writing', async (t) => {
   setup()
+
   const scheme = 'envelope-large-symmetric-group'
   const key1 = { key: testkey, scheme }
   const key2 = { key: testkey2, scheme }
@@ -324,7 +324,19 @@ test('You can add multiple keys to a group and switch between them for writing',
     'adding second key worked'
   )
 
-  //TODO: test pick other write key
+  await sbot.box2.pickGroupWriteKey(groupId, key2).catch(t.fail)
+
+  const groupInfo3 = await sbot.box2.getGroupInfo(groupId)
+
+  t.deepEquals(
+    groupInfo3,
+    {
+      writeKey: key2,
+      readKeys: [key1, key2],
+      root: testRoot,
+    },
+    'picking second key worked'
+  )
 
   tearDown()
 })
