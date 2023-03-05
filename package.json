@@ -18,7 +18,7 @@
     "pull-stream": "^3.6.14",
     "private-group-spec": "^2.1.1",
     "ssb-bfe": "^3.7.0",
-    "ssb-keyring": "https://gitlab.com/powersource/ssb-keyring/-/archive/multiple-keys/ssb-keyring-multiple-keys.tar.gz",
+    "ssb-keyring": "https://gitlab.com/ahau/lib/ssb-keyring/-/archive/master/ssb-keyring-master.tar.gz",
     "ssb-private-group-keys": "^1.1.1",
     "ssb-ref": "^2.16.0",
     "ssb-uri2": "^2.4.1"
