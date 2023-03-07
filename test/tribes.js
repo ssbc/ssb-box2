@@ -19,13 +19,22 @@ function readyDir(dir) {
 }
 
 const groupId = '%Lihvp+fMdt5CihjbOY6eZc0qCe0eKsrN2wfgXV2E3PM=.cloaked'
+const testkey = Buffer.from(
+  '50720d8f9cbf37f6d7062826f6decac93e308060a8aaaa77e6a4747f40ee1a76',
+  'hex'
+)
+const testkey2 = Buffer.from(
+  'b07a70e555555555555555555555555555555555555555555555555555555555',
+  'hex'
+)
+const testRoot = '%MPB9vxHO0pvi2ve2wh6Do05ZrV7P6ZjUQ+IEYnzLfTs=.sha256'
 
 let sbot
 let keys
 let db1Keys
 let db1Sbot
 
-test('setup', (t) => {
+function setup() {
   const dir = readyDir('/tmp/ssb-db2-box2-tribes')
   keys = ssbKeys.loadOrCreateSync(path.join(dir, 'secret'))
 
@@ -55,6 +64,10 @@ test('setup', (t) => {
       keys: db1Keys,
       path: db1Dir,
     })
+}
+
+test('setup', (t) => {
+  setup()
 
   t.end()
 })
@@ -117,14 +130,9 @@ test('second DM message can be read with tribes1', (t) => {
 })
 
 test('group message can be read with tribes1', (t) => {
-  const testkey = Buffer.from(
-    '50720d8f9cbf37f6d7062826f6decac93e308060a8aaaa77e6a4747f40ee1a76',
-    'hex'
-  )
-
   const registerOpts = {
     key: testkey.toString('base64'),
-    root: '%MPB9vxHO0pvi2ve2wh6Do05ZrV7P6ZjUQ+IEYnzLfTs=.sha256',
+    root: testRoot,
   }
 
   sbot.box2.addGroupInfo(groupId, { key: testkey, root: registerOpts.root })
@@ -260,15 +268,75 @@ test('can list group ids live', (t) => {
 })
 
 test('can get group info', async (t) => {
-  const info = await sbot.box2.getGroupKeyInfo(groupId)
+  const info = await sbot.box2.getGroupInfo(groupId)
 
-  t.true(Buffer.isBuffer(info.key), 'key is a buffer')
-  t.equal(info.scheme, 'envelope-large-symmetric-group', 'scheme is correct')
+  t.true(Buffer.isBuffer(info.writeKey.key), 'key is a buffer')
+  t.equal(
+    info.writeKey.scheme,
+    'envelope-large-symmetric-group',
+    'scheme is correct'
+  )
   t.true(ref.isMsg(info.root), 'has root')
 
   t.end()
 })
 
+function tearDown(cb) {
+  sbot.close(() => db1Sbot.close(cb))
+}
+
 test('teardown', (t) => {
-  sbot.close(() => db1Sbot.close(t.end))
+  tearDown(t.end)
+})
+
+test('You can add multiple keys to a group and switch between them for writing', async (t) => {
+  setup()
+
+  const scheme = 'envelope-large-symmetric-group'
+  const key1 = { key: testkey, scheme }
+  const key2 = { key: testkey2, scheme }
+
+  await sbot.box2.addGroupInfo(groupId, { key: testkey, root: testRoot })
+
+  const groupInfo1 = await sbot.box2.getGroupInfo(groupId)
+
+  t.deepEquals(
+    groupInfo1,
+    {
+      writeKey: key1,
+      readKeys: [key1],
+      root: testRoot,
+    },
+    'adding first key worked'
+  )
+
+  await sbot.box2.addGroupInfo(groupId, { key: testkey2, root: testRoot })
+
+  const groupInfo2 = await sbot.box2.getGroupInfo(groupId)
+
+  t.deepEquals(
+    groupInfo2,
+    {
+      writeKey: key1,
+      readKeys: [key1, key2],
+      root: testRoot,
+    },
+    'adding second key worked'
+  )
+
+  await sbot.box2.pickGroupWriteKey(groupId, key2).catch(t.fail)
+
+  const groupInfo3 = await sbot.box2.getGroupInfo(groupId)
+
+  t.deepEquals(
+    groupInfo3,
+    {
+      writeKey: key2,
+      readKeys: [key1, key2],
+      root: testRoot,
+    },
+    'picking second key worked'
+  )
+
+  tearDown()
 })

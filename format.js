@@ -120,8 +120,18 @@ function makeEncryptionFormat() {
   }
 
   function addGroupInfo(id, info, cb) {
+    if (cb === undefined) return promisify(addGroupInfo)(id, info)
+
     keyringReady.onReady(() => {
-      keyring.group.add(id, info, cb ? cb : reportError)
+      keyring.group.add(id, info, cb)
+    })
+  }
+
+  function pickGroupWriteKey(id, pickedKey, cb) {
+    if (cb === undefined) return promisify(pickGroupWriteKey)(id, pickedKey)
+
+    keyringReady.onReady(() => {
+      keyring.group.pickWriteKey(id, pickedKey, cb)
     })
   }
 
@@ -137,8 +147,8 @@ function makeEncryptionFormat() {
     )
   }
 
-  function getGroupKeyInfo(groupId, cb) {
-    if (cb === undefined) return promisify(getGroupKeyInfo)(groupId)
+  function getGroupInfo(groupId, cb) {
+    if (cb === undefined) return promisify(getGroupInfo)(groupId)
 
     if (!groupId) cb(new Error('Group id required'))
 
@@ -187,7 +197,7 @@ function makeEncryptionFormat() {
       } else if (isFeed(recp)) {
         return dmEncryptionKey(opts.keys, recp)
       } else if (isGroupId(recp) && keyring.group.has(recp)) {
-        return keyring.group.get(recp)
+        return keyring.group.get(recp).writeKey
       } else throw new Error('Unsupported recipient: ' + recp)
     })
 
@@ -253,7 +263,11 @@ function makeEncryptionFormat() {
     const authorBFE = BFE.encode(authorId)
     const previousBFE = BFE.encode(opts.previous)
 
-    const groupKeys = keyring.group.listSync().map(keyring.group.get)
+    const groupKeys = keyring.group
+      .listSync()
+      .map(keyring.group.get)
+      .map((groupInfo) => groupInfo.readKeys)
+      .flat()
     const selfKey = selfDecryptionKeys(authorId)
     const dmKey = dmDecryptionKeys(authorId)
 
@@ -278,8 +292,9 @@ function makeEncryptionFormat() {
     // ssb-box2 specific APIs:
     setOwnDMKey,
     addGroupInfo,
+    pickGroupWriteKey,
     listGroupIds,
-    getGroupKeyInfo,
+    getGroupInfo,
     canDM,
     // Internal APIs:
     addSigningKeys,
