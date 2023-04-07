@@ -135,6 +135,16 @@ function makeEncryptionFormat() {
     })
   }
 
+  function removeGroupInfo(id, opts, cb) {
+    if (cb === undefined) return promisify(removeGroupInfo)(id, opts)
+
+    if (!id) cb(new Error('Group id required'))
+
+    keyringReady.onReady(() => {
+      keyring.group.remove(id, opts, cb)
+    })
+  }
+
   function listGroupIds(opts = {}) {
     return pull(
       pull.values([0]),
@@ -293,6 +303,7 @@ function makeEncryptionFormat() {
     setOwnDMKey,
     addGroupInfo,
     pickGroupWriteKey,
+    removeGroupInfo,
     listGroupIds,
     getGroupInfo,
     canDM,
