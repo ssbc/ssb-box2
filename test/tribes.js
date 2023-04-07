@@ -359,7 +359,9 @@ test('You can remove info from a group', async (t) => {
     'removing group info just leaves removed: true'
   )
 
-  // TODO: list
+  const list = await pull(sbot.box2.listGroupIds(), pull.collectAsPromise())
+
+  t.deepEquals(list, [groupId], 'group is still in list after removal')
 
   await tearDown()
 })
