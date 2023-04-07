@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: Unlicense
 
+const { promisify } = require('util')
 const test = require('tape')
 const ssbKeys = require('ssb-keys')
 const path = require('path')
@@ -282,7 +283,9 @@ test('can get group info', async (t) => {
 })
 
 function tearDown(cb) {
-  sbot.close(() => db1Sbot.close(cb))
+  if (cb === undefined) return promisify(tearDown)()
+
+  sbot.close(true, () => db1Sbot.close(true, cb))
 }
 
 test('teardown', (t) => {
@@ -338,5 +341,25 @@ test('You can add multiple keys to a group and switch between them for writing',
     'picking second key worked'
   )
 
-  tearDown()
+  await tearDown()
+})
+
+test('You can remove info from a group', async (t) => {
+  setup()
+
+  await sbot.box2.addGroupInfo(groupId, { key: testkey, root: testRoot })
+
+  await sbot.box2.removeGroupInfo(groupId, null)
+
+  const groupInfo = await sbot.box2.getGroupInfo(groupId)
+
+  t.deepEquals(
+    groupInfo,
+    { removed: true },
+    'removing group info just leaves removed: true'
+  )
+
+  // TODO: list
+
+  await tearDown()
 })
