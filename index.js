@@ -30,7 +30,7 @@ exports.init = function (ssb, config) {
     canDM: encryptionFormat.canDM,
     addGroupInfo: encryptionFormat.addGroupInfo,
     pickGroupWriteKey: encryptionFormat.pickGroupWriteKey,
-    removeGroupInfo: encryptionFormat.removeGroupInfo,
+    excludeGroupInfo: encryptionFormat.excludeGroupInfo,
     listGroupIds: encryptionFormat.listGroupIds,
     getGroupInfo: encryptionFormat.getGroupInfo,
   }

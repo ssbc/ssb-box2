@@ -135,13 +135,13 @@ function makeEncryptionFormat() {
     })
   }
 
-  function removeGroupInfo(id, opts, cb) {
-    if (cb === undefined) return promisify(removeGroupInfo)(id, opts)
+  function excludeGroupInfo(id, opts, cb) {
+    if (cb === undefined) return promisify(excludeGroupInfo)(id, opts)
 
     if (!id) cb(new Error('Group id required'))
 
     keyringReady.onReady(() => {
-      keyring.group.remove(id, opts, cb)
+      keyring.group.exclude(id, opts, cb)
     })
   }
 
@@ -208,8 +208,8 @@ function makeEncryptionFormat() {
         return dmEncryptionKey(opts.keys, recp)
       } else if (isGroupId(recp) && keyring.group.has(recp)) {
         const group = keyring.group.get(recp)
-        if (group.removed)
-          throw new Error("Can't encrypt to a group we've been removed from")
+        if (group.excluded)
+          throw new Error("Can't encrypt to a group we've been excluded from")
         return group.writeKey
       } else throw new Error('Unsupported recipient: ' + recp)
     })
@@ -279,7 +279,7 @@ function makeEncryptionFormat() {
     const groupKeys = keyring.group
       .listSync()
       .map(keyring.group.get)
-      .filter((groupInfo) => !groupInfo.removed)
+      .filter((groupInfo) => !groupInfo.excluded)
       .map((groupInfo) => groupInfo.readKeys)
       .flat()
     const selfKey = selfDecryptionKeys(authorId)
@@ -307,7 +307,7 @@ function makeEncryptionFormat() {
     setOwnDMKey,
     addGroupInfo,
     pickGroupWriteKey,
-    removeGroupInfo,
+    excludeGroupInfo,
     listGroupIds,
     getGroupInfo,
     canDM,

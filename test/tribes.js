@@ -344,24 +344,24 @@ test('You can add multiple keys to a group and switch between them for writing',
   await tearDown()
 })
 
-test('You can remove info from a group', async (t) => {
+test('You can exclude info from a group', async (t) => {
   setup()
 
   await sbot.box2.addGroupInfo(groupId, { key: testkey, root: testRoot })
 
-  await sbot.box2.removeGroupInfo(groupId, null)
+  await sbot.box2.excludeGroupInfo(groupId, null)
 
   const groupInfo = await sbot.box2.getGroupInfo(groupId)
 
   t.deepEquals(
     groupInfo,
-    { removed: true },
-    'removing group info just leaves removed: true'
+    { excluded: true },
+    'excluding group info just leaves excluded: true'
   )
 
   const list = await pull(sbot.box2.listGroupIds(), pull.collectAsPromise())
 
-  t.deepEquals(list, [groupId], 'group is still in list after removal')
+  t.deepEquals(list, [groupId], 'group is still in list after exclusion')
 
   await tearDown()
 })
