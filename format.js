@@ -135,13 +135,13 @@ function makeEncryptionFormat() {
     })
   }
 
-  function excludeGroupInfo(id, opts, cb) {
-    if (cb === undefined) return promisify(excludeGroupInfo)(id, opts)
+  function excludeGroupInfo(id, cb) {
+    if (cb === undefined) return promisify(excludeGroupInfo)(id)
 
     if (!id) cb(new Error('Group id required'))
 
     keyringReady.onReady(() => {
-      keyring.group.exclude(id, opts, cb)
+      keyring.group.exclude(id, cb)
     })
   }
 
@@ -150,7 +150,13 @@ function makeEncryptionFormat() {
       pull.values([0]),
       pull.asyncMap((_, cb) => {
         keyringReady.onReady(() => {
-          return cb(null, keyring.group.list({ live: !!opts.live }))
+          return cb(
+            null,
+            keyring.group.list({
+              live: !!opts.live,
+              excluded: !!opts.excluded,
+            })
+          )
         })
       }),
       pull.flatten()

@@ -359,9 +359,21 @@ test('You can exclude info from a group', async (t) => {
     'excluding group info just leaves excluded: true'
   )
 
-  const list = await pull(sbot.box2.listGroupIds(), pull.collectAsPromise())
+  const listNotExcluded = await pull(
+    sbot.box2.listGroupIds(),
+    pull.collectAsPromise()
+  )
+  t.deepEquals(listNotExcluded, [], 'group is not in list after exclusion')
 
-  t.deepEquals(list, [groupId], 'group is still in list after exclusion')
+  const listExcluded = await pull(
+    sbot.box2.listGroupIds({ excluded: true }),
+    pull.collectAsPromise()
+  )
+  t.deepEquals(
+    listExcluded,
+    [groupId],
+    'group is in exclusion list after exclusion'
+  )
 
   await tearDown()
 })
