@@ -2,6 +2,7 @@
 //
 // SPDX-License-Identifier: Unlicense
 
+const { promisify } = require('util')
 const test = require('tape')
 const ssbKeys = require('ssb-keys')
 const path = require('path')
@@ -282,7 +283,9 @@ test('can get group info', async (t) => {
 })
 
 function tearDown(cb) {
-  sbot.close(() => db1Sbot.close(cb))
+  if (cb === undefined) return promisify(tearDown)()
+
+  sbot.close(true, () => db1Sbot.close(true, cb))
 }
 
 test('teardown', (t) => {
@@ -338,5 +341,39 @@ test('You can add multiple keys to a group and switch between them for writing',
     'picking second key worked'
   )
 
-  tearDown()
+  await tearDown()
+})
+
+test('You can exclude info from a group', async (t) => {
+  setup()
+
+  await sbot.box2.addGroupInfo(groupId, { key: testkey, root: testRoot })
+
+  await sbot.box2.excludeGroupInfo(groupId)
+
+  const groupInfo = await sbot.box2.getGroupInfo(groupId)
+
+  t.deepEquals(
+    groupInfo,
+    { excluded: true },
+    'excluding group info just leaves excluded: true'
+  )
+
+  const listNotExcluded = await pull(
+    sbot.box2.listGroupIds(),
+    pull.collectAsPromise()
+  )
+  t.deepEquals(listNotExcluded, [], 'group is not in list after exclusion')
+
+  const listExcluded = await pull(
+    sbot.box2.listGroupIds({ excluded: true }),
+    pull.collectAsPromise()
+  )
+  t.deepEquals(
+    listExcluded,
+    [groupId],
+    'group is in exclusion list after exclusion'
+  )
+
+  await tearDown()
 })

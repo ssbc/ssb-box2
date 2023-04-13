@@ -135,12 +135,28 @@ function makeEncryptionFormat() {
     })
   }
 
+  function excludeGroupInfo(id, cb) {
+    if (cb === undefined) return promisify(excludeGroupInfo)(id)
+
+    if (!id) cb(new Error('Group id required'))
+
+    keyringReady.onReady(() => {
+      keyring.group.exclude(id, cb)
+    })
+  }
+
   function listGroupIds(opts = {}) {
     return pull(
       pull.values([0]),
       pull.asyncMap((_, cb) => {
         keyringReady.onReady(() => {
-          return cb(null, keyring.group.list({ live: !!opts.live }))
+          return cb(
+            null,
+            keyring.group.list({
+              live: !!opts.live,
+              excluded: !!opts.excluded,
+            })
+          )
         })
       }),
       pull.flatten()
@@ -293,6 +309,7 @@ function makeEncryptionFormat() {
     setOwnDMKey,
     addGroupInfo,
     pickGroupWriteKey,
+    excludeGroupInfo,
     listGroupIds,
     getGroupInfo,
     canDM,
