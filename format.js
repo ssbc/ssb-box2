@@ -213,10 +213,7 @@ function makeEncryptionFormat() {
       } else if (isFeed(recp)) {
         return dmEncryptionKey(opts.keys, recp)
       } else if (isGroupId(recp) && keyring.group.has(recp)) {
-        const group = keyring.group.get(recp)
-        if (group.excluded)
-          throw new Error("Can't encrypt to a group we've been excluded from")
-        return group.writeKey
+        return keyring.group.get(recp).writeKey
       } else throw new Error('Unsupported recipient: ' + recp)
     })
 
@@ -285,7 +282,6 @@ function makeEncryptionFormat() {
     const groupKeys = keyring.group
       .listSync()
       .map(keyring.group.get)
-      .filter((groupInfo) => !groupInfo.excluded)
       .map((groupInfo) => groupInfo.readKeys)
       .flat()
     const selfKey = selfDecryptionKeys(authorId)

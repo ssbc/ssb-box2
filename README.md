@@ -72,8 +72,8 @@ on the `sbot.box2` namespace:
   - `key` must be a buffer. The key can then be used for decrypting messages from the group, and if picked with `pickGroupWriteKey`, as a "recp" to encrypt messages to the group. Note that the keys are not persisted in this module.
   - `scheme` _String_ - scheme of that encryption key (optional, there is only one option at the moment which we default to)
   - `root` _MessageId_ the id of the `group/init` message
-- `excludeGroupInfo(groupId, opts, cb)`: Removes group info from a groupId, for instance if you or someone else has excluded you from one. The group will still be listed among other groups but getting info about it will only return `{ excluded: true }`. Returns a promise if cb isn't provided.
-- `listGroupIds({ live }) => PullStream<groupIds>`: Returns a pull stream of all groupIds whose messages you're able to decrypt. If `live` is true then it returns a pull stream with all previous but also all future group ids.
+- `excludeGroupInfo(groupId, cb)`: Removes group info from a groupId, for instance if you or someone else has excluded you from one. Getting info about it will only return `{ excluded: true }`. Returns a promise if cb isn't provided.
+- `listGroupIds({ live, excluded }) => PullStream<groupIds>`: Returns a pull stream of all groupIds whose messages you're able to decrypt. If `live` is true then it returns a pull stream with all previous but also all future group ids. If `excluded` is true then it returns only excluded groups (groups you've been excluded from) instead of only non-excluded groups.
 - `pickGroupWriteKey(groupId, pickedKey, cb)`: Picks one of the group's current read keys to be the group's write key. The picked key needs to exactly match one of the read keys. Returns a promise if cb isn't provided.
   - `groupId`: cloaked message id or uri encoded group id.
   - `pickedKey`: `{key: Buffer, scheme: string }` format

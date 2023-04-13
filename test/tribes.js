@@ -349,7 +349,7 @@ test('You can exclude info from a group', async (t) => {
 
   await sbot.box2.addGroupInfo(groupId, { key: testkey, root: testRoot })
 
-  await sbot.box2.excludeGroupInfo(groupId, null)
+  await sbot.box2.excludeGroupInfo(groupId)
 
   const groupInfo = await sbot.box2.getGroupInfo(groupId)
 
