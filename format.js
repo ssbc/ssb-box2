@@ -173,6 +173,20 @@ function makeEncryptionFormat() {
     })
   }
 
+  function getGroupInfoUpdates(groupId) {
+    if (!groupId) return pull.error(new Error('Group id required'))
+
+    return pull(
+      pull.values([0]),
+      pull.asyncMap((_, cb) => {
+        keyringReady.onReady(() => {
+          return cb(null, keyring.group.getUpdates(groupId))
+        })
+      }),
+      pull.flatten()
+    )
+  }
+
   function dmEncryptionKey(authorKeys, recp) {
     if (legacyMode) {
       if (!keyring.dm.has(authorKeys.id, recp)) addDMPairSync(authorKeys, recp)
@@ -312,6 +326,7 @@ function makeEncryptionFormat() {
     excludeGroupInfo,
     listGroupIds,
     getGroupInfo,
+    getGroupInfoUpdates,
     canDM,
     // Internal APIs:
     addSigningKeys,

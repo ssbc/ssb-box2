@@ -268,6 +268,20 @@ test('can list group ids live', (t) => {
   )
 })
 
+test('can get group info updates', (t) => {
+  pull(
+    sbot.box2.getGroupInfoUpdates(groupId),
+    pull.take(1),
+    pull.collect((err, info) => {
+      if (err) t.fail(err)
+
+      t.true(Buffer.isBuffer(info[0].writeKey.key), 'we got the group info')
+
+      t.end()
+    })
+  )
+})
+
 test('can get group info', async (t) => {
   const info = await sbot.box2.getGroupInfo(groupId)
 

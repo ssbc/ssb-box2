@@ -33,5 +33,6 @@ exports.init = function (ssb, config) {
     excludeGroupInfo: encryptionFormat.excludeGroupInfo,
     listGroupIds: encryptionFormat.listGroupIds,
     getGroupInfo: encryptionFormat.getGroupInfo,
+    getGroupInfoUpdates: encryptionFormat.getGroupInfoUpdates,
   }
 }

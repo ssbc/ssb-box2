@@ -85,6 +85,7 @@ on the `sbot.box2` namespace:
 
   where `groupKey` is an object containing a `key` buffer and a `scheme` string.
 
+- `getGroupInfoUpdates(groupId) => PullStream<groupInfo>`: Like `getGroupInfo` but instead returns a live pull stream that outputs the group info and then any time the group info is updated.
 - `canDM(myLeafFeedId, theirRootFeedId, cb)`: Checks if you can create an encrypted message ("DM") for a given `theirRootFeedId` (which must be a bendybutt-v1 root metafeed ID) using your `myLeafFeedId` as the author. Delivers a boolean on the callback.
 
 ## DM Encryption
