@@ -14,6 +14,7 @@ const { keySchemes } = require('private-group-spec')
 const Keyring = require('ssb-keyring')
 const { ReadyGate } = require('./utils')
 const pull = require('pull-stream')
+const pullDefer = require('pull-defer')
 
 function reportError(err) {
   if (err) console.error(err)
@@ -146,21 +147,18 @@ function makeEncryptionFormat() {
   }
 
   function listGroupIds(opts = {}) {
-    return pull(
-      pull.values([0]),
-      pull.asyncMap((_, cb) => {
-        keyringReady.onReady(() => {
-          return cb(
-            null,
-            keyring.group.list({
-              live: !!opts.live,
-              excluded: !!opts.excluded,
-            })
-          )
-        })
-      }),
-      pull.flatten()
-    )
+    const deferredSource = pullDefer.source()
+
+    keyringReady.onReady(() => {
+      const source = keyring.group.list({
+        live: !!opts.live,
+        excluded: !!opts.excluded,
+      })
+
+      deferredSource.resolve(source)
+    })
+
+    return deferredSource
   }
 
   function getGroupInfo(groupId, cb) {
@@ -171,6 +169,20 @@ function makeEncryptionFormat() {
     keyringReady.onReady(() => {
       cb(null, keyring.group.get(groupId))
     })
+  }
+
+  function getGroupInfoUpdates(groupId) {
+    if (!groupId) return pull.error(new Error('Group id required'))
+
+    const deferredSource = pullDefer.source()
+
+    keyringReady.onReady(() => {
+      const source = keyring.group.getUpdates(groupId)
+
+      deferredSource.resolve(source)
+    })
+
+    return deferredSource
   }
 
   function dmEncryptionKey(authorKeys, recp) {
@@ -312,6 +324,7 @@ function makeEncryptionFormat() {
     excludeGroupInfo,
     listGroupIds,
     getGroupInfo,
+    getGroupInfoUpdates,
     canDM,
     // Internal APIs:
     addSigningKeys,
