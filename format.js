@@ -291,8 +291,9 @@ function makeEncryptionFormat() {
     const authorBFE = BFE.encode(authorId)
     const previousBFE = BFE.encode(opts.previous)
 
-    const groupKeys = keyring.group
-      .listSync()
+    const groups = keyring.group.listSync()
+    const excludedGroups = keyring.group.listSync({ excluded: true })
+    const groupKeys = [...groups, ...excludedGroups]
       .map(keyring.group.get)
       .map((groupInfo) => groupInfo.readKeys)
       .flat()
