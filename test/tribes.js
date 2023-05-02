@@ -12,6 +12,7 @@ const SecretStack = require('secret-stack')
 const caps = require('ssb-caps')
 const ref = require('ssb-ref')
 const pull = require('pull-stream')
+const { keySchemes } = require('private-group-spec')
 
 function readyDir(dir) {
   rimraf.sync(dir)
@@ -369,8 +370,12 @@ test('You can exclude info from a group', async (t) => {
 
   t.deepEquals(
     groupInfo,
-    { excluded: true },
-    'excluding group info just leaves excluded: true'
+    {
+      readKeys: [{ key: testkey, scheme: keySchemes.private_group }],
+      root: testRoot,
+      excluded: true,
+    },
+    'excluding group info removes writeKey and adds excluded: true'
   )
 
   const listNotExcluded = await pull(

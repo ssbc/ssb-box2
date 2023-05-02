@@ -138,6 +138,45 @@ test('decrypt as group recipient', (t) => {
   })
 })
 
+test('decrypt as group recipient, still works after exclusion', (t) => {
+  const box2 = Box2()
+  const keys = ssbKeys.generate(null, 'alice', 'buttwoo-v1')
+
+  box2.setup({ keys }, () => {
+    const groupId = '%Lihvp+fMdt5CihjbOY6eZc0qCe0eKsrN2wfgXV2E3PM=.cloaked'
+    box2.addGroupInfo(groupId, {
+      key: Buffer.from(
+        '30720d8f9cbf37f6d7062826f6decac93e308060a8aaaa77e6a4747f40ee1a76',
+        'hex'
+      ),
+    })
+
+    const opts = {
+      keys,
+      content: { type: 'post', text: 'super secret' },
+      previous: null,
+      timestamp: 12345678900,
+      tag: buttwoo.tags.SSB_FEED,
+      hmacKey: null,
+      recps: [groupId, ssbKeys.generate(null, '2').id],
+    }
+
+    const plaintext = buttwoo.toPlaintextBuffer(opts)
+    t.true(Buffer.isBuffer(plaintext), 'plaintext is a buffer')
+
+    const ciphertext = box2.encrypt(plaintext, opts)
+
+    box2.excludeGroupInfo(groupId, (err) => {
+      if (err) t.fail(err)
+
+      const decrypted = box2.decrypt(ciphertext, { ...opts, author: keys.id })
+      t.deepEqual(decrypted, plaintext, 'decrypted plaintext is the same')
+
+      t.end()
+    })
+  })
+})
+
 test('cannot decrypt own DM after we changed our own DM keys', (t) => {
   const box2 = Box2()
   const keys = ssbKeys.generate(null, 'alice', 'buttwoo-v1')
