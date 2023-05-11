@@ -68,7 +68,7 @@ on the `sbot.box2` namespace:
   for yourself, you are free to supply that from any source. The key you provide
   _will_ be persisted locally. For direct messaging other feeds, a key is
   automatically derived.
-- `addGroupInfo(groupId, addInfo, cb)`: `groupId` must be a cloaked message Id or a uri encoded group and `addInfo` must be an object. Can be called multiple times to add multiple read keys. The first key that is added will automatically also be set as the write key. To change the write key, use `pickGroupWriteKey`. Returns a promise if cb isn't provided. `addInfo` can have these keys:
+- `addGroupInfo(groupId, addInfo, cb)`: `groupId` must be a cloaked message Id or a uri encoded group and `addInfo` must be an object. Can be called multiple times to add multiple read keys. The first key that is added will automatically also be set as the write key. To change the write key, use `pickGroupWriteKey`. If you add a key to an excluded group, the group will be un-excluded. Returns a promise if cb isn't provided. `addInfo` can have these keys:
   - `key` must be a buffer. The key can then be used for decrypting messages from the group, and if picked with `pickGroupWriteKey`, as a "recp" to encrypt messages to the group. Note that the keys are not persisted in this module.
   - `scheme` _String_ - scheme of that encryption key (optional, there is only one option at the moment which we default to)
   - `root` _MessageId_ the id of the `group/init` message
