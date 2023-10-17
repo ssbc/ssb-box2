@@ -87,6 +87,18 @@ on the `sbot.box2` namespace:
 
 - `getGroupInfoUpdates(groupId) => PullStream<groupInfo>`: Like `getGroupInfo` but instead returns a live pull stream that outputs the group info and then any time the group info is updated.
 - `canDM(myLeafFeedId, theirRootFeedId, cb)`: Checks if you can create an encrypted message ("DM") for a given `theirRootFeedId` (which must be a bendybutt-v1 root metafeed ID) using your `myLeafFeedId` as the author. Delivers a boolean on the callback.
+- `keyring.poBox.add(poBoxId, info, cb)`: Stores the key to a poBox. Returns a promise if cb isn't provided.
+
+  where
+  - `poBoxId` *String* is an SSB-URI for a P.O. Box
+  - `info` *Object*
+      - `info.key` *Buffer* - the private part of a diffie-hellman key
+      - `info.scheme` *String* the scheme associated with that key (currently optional (undefined by default))
+
+- `keyring.poBox.has(poBoxId, cb) => Boolean`: If a poBox with the given id is currently stored. Returns a promise if cb isn't provided.
+
+- `keyring.poBox.get(poBoxId, cb) => keyInfo`: Gets a poBox's key info if stored. An object with a `key` buffer and a `scheme` if a scheme was stored. Returns a promise if cb isn't provided.
+- `keyring.poBox.list(poBoxId) => PullStream<poBoxId>`: A pull stream of all the currently stored poBox ids.
 
 ## DM Encryption
 
