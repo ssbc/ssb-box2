@@ -7,6 +7,8 @@ const { check } = require('ssb-encryption-format')
 const ssbKeys = require('ssb-keys')
 const buttwoo = require('ssb-buttwoo/format')
 const { keySchemes } = require('private-group-spec')
+const { DHKeys } = require('ssb-private-group-keys')
+const bfe = require('ssb-bfe')
 
 const Box2 = require('../format')
 
@@ -348,6 +350,44 @@ test('encrypt accepts keys as recps', (t) => {
     const plaintext = buttwoo.toPlaintextBuffer(opts)
 
     box2.encrypt(plaintext, opts)
+
+    t.end()
+  })
+})
+
+test('decrypt as pobox recipient', (t) => {
+  const box2 = Box2()
+  const keys = ssbKeys.generate(null, 'alice', 'buttwoo-v1')
+
+  const poBoxDH = new DHKeys().generate()
+
+  const poBoxId = bfe.decode(
+    Buffer.concat([bfe.toTF('identity', 'po-box'), poBoxDH.toBuffer().public])
+  )
+  const testkey = poBoxDH.toBuffer().secret
+
+  box2.setup({ keys }, () => {
+    box2.addPoBox(poBoxId, {
+      key: testkey,
+    })
+
+    const opts = {
+      keys,
+      content: { type: 'post', text: 'super secret' },
+      previous: null,
+      timestamp: 12345678900,
+      tag: buttwoo.tags.SSB_FEED,
+      hmacKey: null,
+      recps: [poBoxId, ssbKeys.generate(null, '2').id],
+    }
+
+    const plaintext = buttwoo.toPlaintextBuffer(opts)
+    t.true(Buffer.isBuffer(plaintext), 'plaintext is a buffer')
+
+    const ciphertext = box2.encrypt(plaintext, opts)
+
+    const decrypted = box2.decrypt(ciphertext, { ...opts, author: keys.id })
+    t.deepEqual(decrypted, plaintext, 'decrypted plaintext is the same')
 
     t.end()
   })
