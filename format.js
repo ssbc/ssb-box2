@@ -8,7 +8,7 @@ const Ref = require('ssb-ref')
 const Uri = require('ssb-uri2')
 const path = require('path')
 const os = require('os')
-const { box, unbox, unboxKey, unboxBody } = require('envelope-js')
+const { box, unbox } = require('envelope-js')
 const { SecretKey, DHKeys, poBoxKey } = require('ssb-private-group-keys')
 const { keySchemes } = require('private-group-spec')
 const Keyring = require('ssb-keyring')
@@ -336,6 +336,35 @@ function makeEncryptionFormat() {
     }
   }
 
+  function poBoxDecryptionKey(authorId, authorIdBFE, poBoxId) {
+    // TODO - consider how to reduce redundent computation + memory use here
+    const data = keyring.poBox.get(poBoxId)
+
+    const poBox_dh_secret = Buffer.concat([
+      BFE.toTF('encryption-key', 'box2-pobox-dh'),
+      data.key,
+    ])
+
+    const poBox_id = BFE.encode(poBoxId)
+    const poBox_dh_public = Buffer.concat([
+      BFE.toTF('encryption-key', 'box2-pobox-dh'),
+      poBox_id.slice(2),
+    ])
+
+    const author_dh_public = new DHKeys(
+      { public: authorId },
+      { fromEd25519: true }
+    ).toBFE().public
+
+    return poBoxKey(
+      poBox_dh_secret,
+      poBox_dh_public,
+      poBox_id,
+      author_dh_public,
+      authorIdBFE
+    )
+  }
+
   function decrypt(ciphertextBuf, opts) {
     const authorId = opts.author
     const authorBFE = BFE.encode(authorId)
@@ -349,6 +378,9 @@ function makeEncryptionFormat() {
       .flat()
     const selfKey = selfDecryptionKeys(authorId)
     const dmKey = dmDecryptionKeys(authorId)
+    const poBoxKeys = keyring.poBox
+      .list()
+      .map((poBoxId) => poBoxDecryptionKey(authorId, authorBFE, poBoxId))
 
     const unboxWith = unbox.bind(null, ciphertextBuf, authorBFE, previousBFE)
 
@@ -357,56 +389,7 @@ function makeEncryptionFormat() {
     if ((plaintextBuf = unboxWith(groupKeys, ATTEMPT1))) return plaintextBuf
     if ((plaintextBuf = unboxWith(selfKey, ATTEMPT16))) return plaintextBuf
     if ((plaintextBuf = unboxWith(dmKey, ATTEMPT16))) return plaintextBuf
-
-    /* check my poBox keys */
-    // TODO - consider how to reduce redundent computation + memory use here
-    const trial_poBox_keys = keyring.poBox.list().map((poBoxId) => {
-      const data = keyring.poBox.get(poBoxId)
-
-      const poBox_dh_secret = Buffer.concat([
-        BFE.toTF('encryption-key', 'box2-pobox-dh'),
-        data.key,
-      ])
-
-      const poBox_id = BFE.encode(poBoxId)
-      const poBox_dh_public = Buffer.concat([
-        BFE.toTF('encryption-key', 'box2-pobox-dh'),
-        poBox_id.slice(2),
-      ])
-
-      const author_dh_public = new DHKeys(
-        { public: authorId },
-        { fromEd25519: true }
-      ).toBFE().public
-
-      return poBoxKey(
-        poBox_dh_secret,
-        poBox_dh_public,
-        poBox_id,
-        author_dh_public,
-        authorBFE
-      )
-    })
-
-    const tryPoBoxKey = unboxKey(
-      ciphertextBuf,
-      authorBFE,
-      previousBFE,
-      trial_poBox_keys,
-      { maxAttempts: 16 }
-    )
-    if (tryPoBoxKey) {
-      if (
-        (plaintextBuf = unboxBody(
-          ciphertextBuf,
-          authorBFE,
-          previousBFE,
-          tryPoBoxKey,
-          ATTEMPT16
-        ))
-      )
-        return plaintextBuf
-    }
+    if ((plaintextBuf = unboxWith(poBoxKeys, ATTEMPT16))) return plaintextBuf
 
     return null
   }
