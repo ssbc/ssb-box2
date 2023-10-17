@@ -8,8 +8,8 @@ const Ref = require('ssb-ref')
 const Uri = require('ssb-uri2')
 const path = require('path')
 const os = require('os')
-const { box, unbox } = require('envelope-js')
-const { SecretKey, DHKeys } = require('ssb-private-group-keys')
+const { box, unbox, unboxKey, unboxBody } = require('envelope-js')
+const { SecretKey, DHKeys, poBoxKey } = require('ssb-private-group-keys')
 const { keySchemes } = require('private-group-spec')
 const Keyring = require('ssb-keyring')
 const { ReadyGate } = require('./utils')
@@ -63,6 +63,10 @@ function makeEncryptionFormat() {
 
   function isGroupId(recp) {
     return keyring.group.has(recp)
+  }
+
+  function isPoBoxId(recp) {
+    return keyring.poBox.has(recp)
   }
 
   function isFeed(recp) {
@@ -259,6 +263,7 @@ function makeEncryptionFormat() {
     const recps = opts.recps
     const authorId = opts.keys.id
     const previousId = opts.previous
+    const easyPoBoxKey = poBoxKey.easy(opts.keys)
 
     const encryptionKeys = recps.map((recp) => {
       if (isRawGroupKey(recp)) {
@@ -269,6 +274,8 @@ function makeEncryptionFormat() {
         return dmEncryptionKey(opts.keys, recp)
       } else if (isGroupId(recp) && keyring.group.has(recp)) {
         return keyring.group.get(recp).writeKey
+      } else if (isPoBoxId(recp) && keyring.poBox.has(recp)) {
+        return easyPoBoxKey(recp)
       } else throw new Error('Unsupported recipient: ' + recp)
     })
 
@@ -350,6 +357,56 @@ function makeEncryptionFormat() {
     if ((plaintextBuf = unboxWith(groupKeys, ATTEMPT1))) return plaintextBuf
     if ((plaintextBuf = unboxWith(selfKey, ATTEMPT16))) return plaintextBuf
     if ((plaintextBuf = unboxWith(dmKey, ATTEMPT16))) return plaintextBuf
+
+    /* check my poBox keys */
+    // TODO - consider how to reduce redundent computation + memory use here
+    const trial_poBox_keys = keyring.poBox.list().map((poBoxId) => {
+      const data = keyring.poBox.get(poBoxId)
+
+      const poBox_dh_secret = Buffer.concat([
+        BFE.toTF('encryption-key', 'box2-pobox-dh'),
+        data.key,
+      ])
+
+      const poBox_id = BFE.encode(poBoxId)
+      const poBox_dh_public = Buffer.concat([
+        BFE.toTF('encryption-key', 'box2-pobox-dh'),
+        poBox_id.slice(2),
+      ])
+
+      const author_dh_public = new DHKeys(
+        { public: authorId },
+        { fromEd25519: true }
+      ).toBFE().public
+
+      return poBoxKey(
+        poBox_dh_secret,
+        poBox_dh_public,
+        poBox_id,
+        author_dh_public,
+        authorBFE
+      )
+    })
+
+    const tryPoBoxKey = unboxKey(
+      ciphertextBuf,
+      authorBFE,
+      previousBFE,
+      trial_poBox_keys,
+      { maxAttempts: 16 }
+    )
+    if (tryPoBoxKey) {
+      if (
+        (plaintextBuf = unboxBody(
+          ciphertextBuf,
+          authorBFE,
+          previousBFE,
+          tryPoBoxKey,
+          ATTEMPT16
+        ))
+      )
+        return plaintextBuf
+    }
 
     return null
   }

@@ -357,7 +357,7 @@ test('encrypt accepts keys as recps', (t) => {
 
 test('decrypt as pobox recipient', (t) => {
   const box2 = Box2()
-  const keys = ssbKeys.generate(null, 'alice', 'buttwoo-v1')
+  const keys = ssbKeys.generate(null, 'alice', 'classic')
 
   const poBoxDH = new DHKeys().generate()
 
@@ -369,26 +369,28 @@ test('decrypt as pobox recipient', (t) => {
   box2.setup({ keys }, () => {
     box2.addPoBox(poBoxId, {
       key: testkey,
+    }, (err) => {
+      t.error(err, "added pobox key")
+
+      const opts = {
+        keys,
+        content: { type: 'post', text: 'super secret' },
+        previous: null,
+        timestamp: 12345678900,
+        tag: buttwoo.tags.SSB_FEED,
+        hmacKey: null,
+        recps: [poBoxId, ssbKeys.generate(null, '2').id],
+      }
+
+      const plaintext = buttwoo.toPlaintextBuffer(opts)
+      t.true(Buffer.isBuffer(plaintext), 'plaintext is a buffer')
+
+      const ciphertext = box2.encrypt(plaintext, opts)
+
+      const decrypted = box2.decrypt(ciphertext, { ...opts, author: keys.id })
+      t.deepEqual(decrypted, plaintext, 'decrypted plaintext is the same')
+
+      t.end()
     })
-
-    const opts = {
-      keys,
-      content: { type: 'post', text: 'super secret' },
-      previous: null,
-      timestamp: 12345678900,
-      tag: buttwoo.tags.SSB_FEED,
-      hmacKey: null,
-      recps: [poBoxId, ssbKeys.generate(null, '2').id],
-    }
-
-    const plaintext = buttwoo.toPlaintextBuffer(opts)
-    t.true(Buffer.isBuffer(plaintext), 'plaintext is a buffer')
-
-    const ciphertext = box2.encrypt(plaintext, opts)
-
-    const decrypted = box2.decrypt(ciphertext, { ...opts, author: keys.id })
-    t.deepEqual(decrypted, plaintext, 'decrypted plaintext is the same')
-
-    t.end()
   })
 })
