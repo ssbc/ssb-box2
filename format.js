@@ -185,6 +185,49 @@ function makeEncryptionFormat() {
     return deferredSource
   }
 
+  function addPoBox(poBoxId, info, cb) {
+    if (cb === undefined) return promisify(addPoBox)(poBoxId, info)
+
+    if (!poBoxId) cb(new Error('pobox id required'))
+    if (!info) cb(new Error('pobox info required'))
+
+    keyringReady.onReady(() => {
+      keyring.poBox.add(poBoxId, info, cb)
+    })
+  }
+
+  function hasPoBox(poBoxId, cb) {
+    if (cb === undefined) return promisify(hasPoBox)(poBoxId)
+
+    if (!poBoxId) cb(new Error('pobox id required'))
+
+    keyringReady.onReady(() => {
+      cb(null, keyring.poBox.has(poBoxId))
+    })
+  }
+
+  function getPoBox(poBoxId, cb) {
+    if (cb === undefined) return promisify(getPoBox)(poBoxId)
+
+    if (!poBoxId) cb(new Error('pobox id required'))
+
+    keyringReady.onReady(() => {
+      cb(null, keyring.poBox.get(poBoxId))
+    })
+  }
+
+  function listPoBoxIds() {
+    const deferredSource = pullDefer.source()
+
+    keyringReady.onReady(() => {
+      const source = pull.values(keyring.poBox.list())
+
+      deferredSource.resolve(source)
+    })
+
+    return deferredSource
+  }
+
   function dmEncryptionKey(authorKeys, recp) {
     if (legacyMode) {
       if (!keyring.dm.has(authorKeys.id, recp)) addDMPairSync(authorKeys, recp)
@@ -327,6 +370,10 @@ function makeEncryptionFormat() {
     getGroupInfo,
     getGroupInfoUpdates,
     canDM,
+    addPoBox,
+    hasPoBox,
+    getPoBox,
+    listPoBoxIds,
     // Internal APIs:
     addSigningKeys,
     addSigningKeysSync,
