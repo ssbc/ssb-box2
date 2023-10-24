@@ -61,12 +61,12 @@ function makeEncryptionFormat() {
     )
   }
 
-  function isGroupId(recp) {
-    return keyring.group.has(recp)
+  function isGroupId(id) {
+    return Ref.isCloakedMsgId(id) || Uri.isIdentityGroupSSBURI(id)
   }
 
-  function isPoBoxId(recp) {
-    return keyring.poBox.has(recp)
+  function isPoBoxId(id) {
+    return Uri.isIdentityPOBoxSSBURI(id)
   }
 
   function isFeed(recp) {
