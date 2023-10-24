@@ -370,25 +370,27 @@ function makeEncryptionFormat() {
     const authorBFE = BFE.encode(authorId)
     const previousBFE = BFE.encode(opts.previous)
 
+    const unboxWith = unbox.bind(null, ciphertextBuf, authorBFE, previousBFE)
+
+    let plaintextBuf = null
+
     const groups = keyring.group.listSync()
     const excludedGroups = keyring.group.listSync({ excluded: true })
     const groupKeys = [...groups, ...excludedGroups]
       .map(keyring.group.get)
       .map((groupInfo) => groupInfo.readKeys)
       .flat()
+    if ((plaintextBuf = unboxWith(groupKeys, ATTEMPT1))) return plaintextBuf
+
     const selfKey = selfDecryptionKeys(authorId)
+    if ((plaintextBuf = unboxWith(selfKey, ATTEMPT16))) return plaintextBuf
+
     const dmKey = dmDecryptionKeys(authorId)
+    if ((plaintextBuf = unboxWith(dmKey, ATTEMPT16))) return plaintextBuf
+
     const poBoxKeys = keyring.poBox
       .list()
       .map((poBoxId) => poBoxDecryptionKey(authorId, authorBFE, poBoxId))
-
-    const unboxWith = unbox.bind(null, ciphertextBuf, authorBFE, previousBFE)
-
-    let plaintextBuf = null
-
-    if ((plaintextBuf = unboxWith(groupKeys, ATTEMPT1))) return plaintextBuf
-    if ((plaintextBuf = unboxWith(selfKey, ATTEMPT16))) return plaintextBuf
-    if ((plaintextBuf = unboxWith(dmKey, ATTEMPT16))) return plaintextBuf
     if ((plaintextBuf = unboxWith(poBoxKeys, ATTEMPT16))) return plaintextBuf
 
     return null
