@@ -356,8 +356,8 @@ test('encrypt accepts keys as recps', (t) => {
 
 test('decrypt group vectors', async (t) => {
   const vectors = [
-    require('ssb-tribes-vectors/test/vectors/unbox1.json'),
-    require('ssb-tribes-vectors/test/vectors/unbox2.json')
+    require('envelope-spec/vectors/unbox-group1.json'),
+    require('envelope-spec/vectors/unbox-group2.json')
   ]
 
   for (let i = 0; i < vectors.length; i++) {
