@@ -48,6 +48,7 @@
     "ssb-meta-feeds": "~0.38.0",
     "ssb-query": "^2.4.5",
     "ssb-tribes": "^2.7.4",
+    "ssb-tribes-vectors": "github:ssbc/ssb-tribes",
     "tap-arc": "^0.3.4",
     "tape": "^5.2.2"
   },
