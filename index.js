@@ -34,5 +34,9 @@ exports.init = function (ssb, config) {
     listGroupIds: encryptionFormat.listGroupIds,
     getGroupInfo: encryptionFormat.getGroupInfo,
     getGroupInfoUpdates: encryptionFormat.getGroupInfoUpdates,
+    addPoBox: encryptionFormat.addPoBox,
+    hasPoBox: encryptionFormat.hasPoBox,
+    getPoBox: encryptionFormat.getPoBox,
+    listPoBoxIds: encryptionFormat.listPoBoxIds,
   }
 }
