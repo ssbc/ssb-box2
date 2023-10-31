@@ -32,7 +32,7 @@ function makeEncryptionFormat() {
   function setup(config, cb) {
     const keyringPath = path.join(
       config.path || path.join(os.tmpdir(), '.ssb-keyring-' + Date.now()),
-      'keyring'
+      (config.box2 && config.box2.path) || 'keyring'
     )
     Keyring(keyringPath, (err, api) => {
       if (err) return cb(err)
