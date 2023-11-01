@@ -9,7 +9,7 @@ const Uri = require('ssb-uri2')
 const path = require('path')
 const os = require('os')
 const { box, unbox } = require('envelope-js')
-const { SecretKey, DHKeys } = require('ssb-private-group-keys')
+const { SecretKey, DHKeys, poBoxKey } = require('ssb-private-group-keys')
 const { keySchemes } = require('private-group-spec')
 const Keyring = require('ssb-keyring')
 const { ReadyGate } = require('./utils')
@@ -61,8 +61,12 @@ function makeEncryptionFormat() {
     )
   }
 
-  function isGroupId(recp) {
-    return keyring.group.has(recp)
+  function isGroupId(id) {
+    return Ref.isCloakedMsgId(id) || Uri.isIdentityGroupSSBURI(id)
+  }
+
+  function isPoBoxId(id) {
+    return Uri.isIdentityPOBoxSSBURI(id)
   }
 
   function isFeed(recp) {
@@ -185,6 +189,49 @@ function makeEncryptionFormat() {
     return deferredSource
   }
 
+  function addPoBox(poBoxId, info, cb) {
+    if (cb === undefined) return promisify(addPoBox)(poBoxId, info)
+
+    if (!poBoxId) cb(new Error('pobox id required'))
+    if (!info) cb(new Error('pobox info required'))
+
+    keyringReady.onReady(() => {
+      keyring.poBox.add(poBoxId, info, cb)
+    })
+  }
+
+  function hasPoBox(poBoxId, cb) {
+    if (cb === undefined) return promisify(hasPoBox)(poBoxId)
+
+    if (!poBoxId) cb(new Error('pobox id required'))
+
+    keyringReady.onReady(() => {
+      cb(null, keyring.poBox.has(poBoxId))
+    })
+  }
+
+  function getPoBox(poBoxId, cb) {
+    if (cb === undefined) return promisify(getPoBox)(poBoxId)
+
+    if (!poBoxId) cb(new Error('pobox id required'))
+
+    keyringReady.onReady(() => {
+      cb(null, keyring.poBox.get(poBoxId))
+    })
+  }
+
+  function listPoBoxIds() {
+    const deferredSource = pullDefer.source()
+
+    keyringReady.onReady(() => {
+      const source = pull.values(keyring.poBox.list())
+
+      deferredSource.resolve(source)
+    })
+
+    return deferredSource
+  }
+
   function dmEncryptionKey(authorKeys, recp) {
     if (legacyMode) {
       if (!keyring.dm.has(authorKeys.id, recp)) addDMPairSync(authorKeys, recp)
@@ -216,6 +263,7 @@ function makeEncryptionFormat() {
     const recps = opts.recps
     const authorId = opts.keys.id
     const previousId = opts.previous
+    const easyPoBoxKey = poBoxKey.easy(opts.keys)
 
     const encryptionKeys = recps.map((recp) => {
       if (isRawGroupKey(recp)) {
@@ -226,6 +274,8 @@ function makeEncryptionFormat() {
         return dmEncryptionKey(opts.keys, recp)
       } else if (isGroupId(recp) && keyring.group.has(recp)) {
         return keyring.group.get(recp).writeKey
+      } else if (isPoBoxId(recp) && keyring.poBox.has(recp)) {
+        return easyPoBoxKey(recp)
       } else throw new Error('Unsupported recipient: ' + recp)
     })
 
@@ -286,10 +336,43 @@ function makeEncryptionFormat() {
     }
   }
 
+  function poBoxDecryptionKey(authorId, authorIdBFE, poBoxId) {
+    // TODO - consider how to reduce redundent computation + memory use here
+    const data = keyring.poBox.get(poBoxId)
+
+    const poBox_dh_secret = Buffer.concat([
+      BFE.toTF('encryption-key', 'box2-pobox-dh'),
+      data.key,
+    ])
+
+    const poBox_id = BFE.encode(poBoxId)
+    const poBox_dh_public = Buffer.concat([
+      BFE.toTF('encryption-key', 'box2-pobox-dh'),
+      poBox_id.slice(2),
+    ])
+
+    const author_dh_public = new DHKeys(
+      { public: authorId },
+      { fromEd25519: true }
+    ).toBFE().public
+
+    return poBoxKey(
+      poBox_dh_secret,
+      poBox_dh_public,
+      poBox_id,
+      author_dh_public,
+      authorIdBFE
+    )
+  }
+
   function decrypt(ciphertextBuf, opts) {
     const authorId = opts.author
     const authorBFE = BFE.encode(authorId)
     const previousBFE = BFE.encode(opts.previous)
+
+    const unboxWith = unbox.bind(null, ciphertextBuf, authorBFE, previousBFE)
+
+    let plaintextBuf = null
 
     const groups = keyring.group.listSync()
     const excludedGroups = keyring.group.listSync({ excluded: true })
@@ -297,16 +380,18 @@ function makeEncryptionFormat() {
       .map(keyring.group.get)
       .map((groupInfo) => groupInfo.readKeys)
       .flat()
-    const selfKey = selfDecryptionKeys(authorId)
-    const dmKey = dmDecryptionKeys(authorId)
-
-    const unboxWith = unbox.bind(null, ciphertextBuf, authorBFE, previousBFE)
-
-    let plaintextBuf = null
-
     if ((plaintextBuf = unboxWith(groupKeys, ATTEMPT1))) return plaintextBuf
+
+    const selfKey = selfDecryptionKeys(authorId)
     if ((plaintextBuf = unboxWith(selfKey, ATTEMPT16))) return plaintextBuf
+
+    const dmKey = dmDecryptionKeys(authorId)
     if ((plaintextBuf = unboxWith(dmKey, ATTEMPT16))) return plaintextBuf
+
+    const poBoxKeys = keyring.poBox
+      .list()
+      .map((poBoxId) => poBoxDecryptionKey(authorId, authorBFE, poBoxId))
+    if ((plaintextBuf = unboxWith(poBoxKeys, ATTEMPT16))) return plaintextBuf
 
     return null
   }
@@ -327,6 +412,10 @@ function makeEncryptionFormat() {
     getGroupInfo,
     getGroupInfoUpdates,
     canDM,
+    addPoBox,
+    hasPoBox,
+    getPoBox,
+    listPoBoxIds,
     // Internal APIs:
     addSigningKeys,
     addSigningKeysSync,
