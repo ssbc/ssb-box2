@@ -358,8 +358,8 @@ test('encrypt accepts keys as recps', (t) => {
 
 test('decrypt group vectors', async (t) => {
   const vectors = [
-    require('private-group-spec-vectors/vectors/unbox1.classic.json'),
-    require('private-group-spec-vectors/vectors/unbox2.classic.json')
+    require('private-group-spec/vectors/unbox1.classic.json'),
+    require('private-group-spec/vectors/unbox2.classic.json')
   ]
 
   for (let i = 0; i < vectors.length; i++) {
