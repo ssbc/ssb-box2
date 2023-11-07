@@ -84,6 +84,12 @@ function makeEncryptionFormat() {
     })
   }
 
+  function getOwnDMKey(cb) {
+    keyringReady.onReady(() => {
+      cb(null, keyring.self.get())
+    })
+  }
+
   function addDMPairSync(myKeys, theirId) {
     if (!keyringReady.ready) throw new Error('keyring not ready')
     const myId = myKeys.id
@@ -405,6 +411,7 @@ function makeEncryptionFormat() {
     decrypt,
     // ssb-box2 specific APIs:
     setOwnDMKey,
+    getOwnDMKey,
     addGroupInfo,
     pickGroupWriteKey,
     excludeGroupInfo,
