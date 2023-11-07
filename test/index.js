@@ -375,6 +375,43 @@ test('encrypt accepts keys as recps', (t) => {
   })
 })
 
+test('decrypt group vectors', async (t) => {
+  const vectors = [
+    require('private-group-spec/vectors/unbox1.classic.json'),
+    require('private-group-spec/vectors/unbox2.classic.json')
+  ]
+
+  for (let i = 0; i < vectors.length; i++) {
+    const vector = vectors[i]
+
+    const keys = ssbKeys.generate(null, 'alice', 'classic')
+    const box2 = Box2()
+
+    await p(box2.setup)({ keys })
+
+    // random letters, but shouldn't matter
+    const groupId = '%boopadoopt5CihjbOY6eZc0qCe0eKsrN2wfgXV2E3PM=.cloaked'
+
+    await Promise.all(vector.input.trial_keys.map(trial_key => 
+      box2.addGroupInfo(groupId, trial_key)
+    ))
+
+    const msg = vector.input.msgs[0]
+
+    const ciphertext = Buffer.from(msg.value.content.replace('.box2', ''), 'base64')
+
+    const opts = {
+      previous: msg.value.previous,
+      author: msg.value.author
+    }
+    const decrypted = box2.decrypt(ciphertext, opts)
+
+    const plaintext = Buffer.from(JSON.stringify(vector.output.msgsContent[0]), 'utf8')
+
+    t.deepEqual(decrypted, plaintext, 'decrypted plaintext is the same')
+  }
+})
+
 test('decrypt as pobox recipient', (t) => {
   const box2 = Box2()
   const keys = ssbKeys.generate(null, 'alice', 'classic')
