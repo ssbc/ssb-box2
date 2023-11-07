@@ -153,6 +153,10 @@ box2Format.setup({ keys }, () => {
 })
 ```
 
+## Config
+
+The keys and data will by default be stored at `SSB_DIR/keyring`. You can change the `SSB_DIR` like normal by setting `config.path` and you can change the `"keyring"` part by setting `config.box2.path`.
+
 [ssb db2]: https://github.com/ssb-ngi-pointer/ssb-db2/
 [ssb-tribes]: https://github.com/ssbc/ssb-tribes/
 [ssb-keyring]: https://gitlab.com/ahau/lib/ssb-keyring/
