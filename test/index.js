@@ -214,6 +214,25 @@ test('cannot decrypt own DM after we changed our own DM keys', (t) => {
   })
 })
 
+test('can get own self dm key', async (t) => {
+  const box2 = Box2()
+  const keys = ssbKeys.generate(null, 'alice', 'buttwoo-v1')
+
+  await p(box2.setup)({ keys })
+
+  const ownKey = Buffer.from(
+    '30720d8f9cbf37f6d7062826f6decac93e308060a8aaaa77e6a4747f40ee1a76',
+    'hex'
+  )
+
+  box2.setOwnDMKey(ownKey)
+
+  const gottenKey = await p(box2.getOwnDMKey)()
+
+  t.equal(gottenKey.key, ownKey, 'got correct key')
+  t.equal(gottenKey.scheme, keySchemes.feed_id_self, 'got correct scheme')
+})
+
 test('cannot encrypt to zero valid recipients', (t) => {
   const box2 = Box2()
   const keys = ssbKeys.generate(null, 'alice', 'buttwoo-v1')
@@ -405,30 +424,34 @@ test('decrypt as pobox recipient', (t) => {
   const testkey = poBoxDH.toBuffer().secret
 
   box2.setup({ keys }, () => {
-    box2.addPoBox(poBoxId, {
-      key: testkey,
-    }, (err) => {
-      t.error(err, "added pobox key")
+    box2.addPoBox(
+      poBoxId,
+      {
+        key: testkey,
+      },
+      (err) => {
+        t.error(err, 'added pobox key')
 
-      const opts = {
-        keys,
-        content: { type: 'post', text: 'super secret' },
-        previous: null,
-        timestamp: 12345678900,
-        tag: buttwoo.tags.SSB_FEED,
-        hmacKey: null,
-        recps: [poBoxId, ssbKeys.generate(null, '2').id],
+        const opts = {
+          keys,
+          content: { type: 'post', text: 'super secret' },
+          previous: null,
+          timestamp: 12345678900,
+          tag: buttwoo.tags.SSB_FEED,
+          hmacKey: null,
+          recps: [poBoxId, ssbKeys.generate(null, '2').id],
+        }
+
+        const plaintext = buttwoo.toPlaintextBuffer(opts)
+        t.true(Buffer.isBuffer(plaintext), 'plaintext is a buffer')
+
+        const ciphertext = box2.encrypt(plaintext, opts)
+
+        const decrypted = box2.decrypt(ciphertext, { ...opts, author: keys.id })
+        t.deepEqual(decrypted, plaintext, 'decrypted plaintext is the same')
+
+        t.end()
       }
-
-      const plaintext = buttwoo.toPlaintextBuffer(opts)
-      t.true(Buffer.isBuffer(plaintext), 'plaintext is a buffer')
-
-      const ciphertext = box2.encrypt(plaintext, opts)
-
-      const decrypted = box2.decrypt(ciphertext, { ...opts, author: keys.id })
-      t.deepEqual(decrypted, plaintext, 'decrypted plaintext is the same')
-
-      t.end()
-    })
+    )
   })
 })

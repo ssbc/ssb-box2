@@ -32,7 +32,7 @@ function makeEncryptionFormat() {
   function setup(config, cb) {
     const keyringPath = path.join(
       config.path || path.join(os.tmpdir(), '.ssb-keyring-' + Date.now()),
-      'keyring'
+      (config.box2 && config.box2.path) || 'keyring'
     )
     Keyring(keyringPath, (err, api) => {
       if (err) return cb(err)
@@ -81,6 +81,12 @@ function makeEncryptionFormat() {
   function setOwnDMKey(key) {
     keyringReady.onReady(() => {
       keyring.self.set({ key }, reportError)
+    })
+  }
+
+  function getOwnDMKey(cb) {
+    keyringReady.onReady(() => {
+      cb(null, keyring.self.get())
     })
   }
 
@@ -405,6 +411,7 @@ function makeEncryptionFormat() {
     decrypt,
     // ssb-box2 specific APIs:
     setOwnDMKey,
+    getOwnDMKey,
     addGroupInfo,
     pickGroupWriteKey,
     excludeGroupInfo,
