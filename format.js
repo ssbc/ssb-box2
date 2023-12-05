@@ -280,7 +280,7 @@ function makeEncryptionFormat() {
         return dmEncryptionKey(opts.keys, recp)
       } else if (isGroupId(recp) && keyring.group.has(recp)) {
         return keyring.group.get(recp).writeKey
-      } else if (isPoBoxId(recp)) {
+      } else if (isPoBoxId(recp) && keyring.poBox.has(recp)) {
         return easyPoBoxKey(recp)
       } else throw new Error('Unsupported recipient: ' + recp)
     })
