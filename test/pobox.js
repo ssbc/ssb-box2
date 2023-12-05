@@ -84,3 +84,22 @@ test('pobox functions', async (t) => {
 
   await tearDown()
 })
+
+test("can encrypt to a pobox we haven't added", t => {
+  setup()
+
+  const opts = {
+    keys,
+    content: { type: 'post', text: 'super secret post to strange pobox' },
+    encryptionFormat: 'box2',
+    recps: [poBoxId],
+  }
+
+  sbot.db.create(opts, (err, privateMsg) => {
+    t.error(err, 'no err')
+
+    t.equal(typeof privateMsg.value.content, 'string')
+
+    tearDown(t.end)
+  })
+})
